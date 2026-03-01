@@ -443,27 +443,37 @@
        MOBILE RESPONSIVE — stacks layout on small screens
        ═══════════════════════════════════════════════════ */
     @media (max-width: 700px) {
+      /* On mobile, let screens scroll from top instead of centering (prevents clipping) */
+      .screen { align-items: flex-start; }
+      .screen-inner { align-items: flex-start; padding: 16px 8px; }
+
       /* Login: single column */
       #login-screen .login-wrap {
         grid-template-columns: 1fr;
         width: 95vw;
-        gap: 20px;
+        gap: 16px;
       }
-      .login-panel, .scoreboard-panel { padding: 24px 20px; }
+      .login-panel, .scoreboard-panel { padding: 20px 16px; }
+      .logo-text h1 { font-size: 22px; }
 
       /* Calibration: stack gauge above panel */
       #calibration-screen .layout {
         grid-template-columns: 1fr;
-        padding: 20px;
-        gap: 28px;
+        padding: 12px;
+        gap: 16px;
       }
       /* Keep gauge vertical on mobile — JS sets style.height so keep that axis */
-      .gauge-track { height: 130px; }
+      .gauge-wrap { flex-direction: row; align-items: center; gap: 12px; }
+      .gauge-track { height: 100px; width: 24px; }
       .gauge-labels { display: none; }
       .gauge-marks  { display: none; }
+      .calib-header h2 { font-size: 20px; }
+      .pressure-readout .val { font-size: 28px; min-width: 56px; }
+      #test-canvas { height: 100px; }
+      .info-box p { font-size: 11px; line-height: 1.6; }
 
       /* Start screen */
-      #start-screen .panel { padding: 32px 24px; min-width: unset; width: 92vw; }
+      #start-screen .panel { padding: 28px 20px; min-width: unset; width: 94vw; gap: 20px; }
 
       /* HUD smaller on mobile */
       #hud { gap: 12px; padding: 7px 14px; top: 10px; }
@@ -865,8 +875,9 @@ const Input = {
     const isInteractiveScreen = () =>
       document.getElementById('game-screen').classList.contains('active') ||
       document.getElementById('calibration-screen').classList.contains('active');
-    const onStart = e => { if (!isInteractiveScreen()) return; e.preventDefault(); this._held = true; };
-    const onEnd   = e => { if (!isInteractiveScreen()) return; e.preventDefault(); this._held = false; };
+    const isTappableEl = e => e.target.closest('button, input, label, a, select, .btn, .sw');
+    const onStart = e => { if (!isInteractiveScreen() || isTappableEl(e)) return; e.preventDefault(); this._held = true; };
+    const onEnd   = e => { if (!isInteractiveScreen() || isTappableEl(e)) return; e.preventDefault(); this._held = false; };
     window.addEventListener('touchstart',  onStart, { passive: false });
     window.addEventListener('touchend',    onEnd,   { passive: false });
     window.addEventListener('touchcancel', onEnd,   { passive: false });
@@ -917,11 +928,11 @@ function showScreen(id) {
   const el = document.getElementById(id + '-screen');
   if (el) el.classList.add('active');
   document.getElementById('hud').classList.toggle('visible', id === 'game');
-  // Show touch button during game AND calibration on touch devices
+  // Show touch button only during game (not calibration — global touch handler covers it)
   const tb = document.getElementById('touch-btn');
-  if (isTouchDevice()) tb.classList.toggle('show', id === 'game' || id === 'calibration');
-  // Restart calibration input loop when entering calibration screen
-  if (id === 'calibration') startCalibLoop();
+  if (isTouchDevice()) tb.classList.toggle('show', id === 'game');
+  // Restart calibration loops when entering calibration screen
+  if (id === 'calibration') { startCalibLoop(); startTestCanvas(); }
   // Refresh scoreboard whenever login screen shown
   if (id === 'login') renderScoreboard();
 }
@@ -1007,7 +1018,10 @@ function buildGauge() {
   });
 }
 
-;(function runTestCanvas() {
+let _testCanvasRunning = false;
+function startTestCanvas() {
+  if (_testCanvasRunning) return;
+  _testCanvasRunning = true;
   const canvas = document.getElementById('test-canvas');
   const ctx    = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
@@ -1055,10 +1069,12 @@ function buildGauge() {
 
     if (document.getElementById('calibration-screen').classList.contains('active')) {
       requestAnimationFrame(tick);
+    } else {
+      _testCanvasRunning = false;
     }
   }
   tick();
-})();
+}
 
 let _calibLoopRunning = false;
 function startCalibLoop() {
