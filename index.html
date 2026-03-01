@@ -1178,8 +1178,9 @@ const Game = {
     /* Mobile physics scaling — pixel-based values feel faster on small screens,
        so we scale proportionally to viewport dimensions */
     const rW = 1200, rH = 800;
-    this.spdScale = Math.min(1, 0.4 + 0.6 * this.W / rW);   // horizontal speed
-    this.vyScale  = Math.min(1, 0.5 + 0.5 * this.H / rH);   // vertical physics
+    const isMob = this.W < 700;
+    this.spdScale = isMob ? 0.38 : Math.min(1, 0.4 + 0.6 * this.W / rW);
+    this.vyScale  = isMob ? 0.55 : Math.min(1, 0.5 + 0.5 * this.H / rH);
 
     this.ball        = { x: startX, y: this.H / 2, vy: 0, trail: [] };
     this.scrollX     = 0;
@@ -1207,11 +1208,17 @@ const Game = {
 
     this.elapsed = (performance.now() - this.t0) / 1000;
 
-    const newTier = Math.floor(this.elapsed / CFG.DIFF_EVERY);
+    const isMob = this.W < 700;
+    const diffInterval = isMob ? 90 : CFG.DIFF_EVERY;       // 90s on mobile vs 60s desktop
+    const spdMult      = isMob ? 1.08 : CFG.SPEED_MULT;     // gentler speed ramp on mobile
+    const gapMult      = isMob ? 0.93 : CFG.GAP_MULT;       // gaps shrink slower on mobile
+    const gapMin       = isMob ? 110  : CFG.GAP_MIN_PX;     // larger minimum gap on mobile
+
+    const newTier = Math.floor(this.elapsed / diffInterval);
     if (newTier > this.tier) {
       this.tier  = newTier;
-      this.speed = CFG.BASE_SPEED * Math.pow(CFG.SPEED_MULT, this.tier) * this.spdScale;
-      this.gapPx = Math.max(CFG.GAP_MIN_PX, this.H * CFG.GAP_START_FRAC * Math.pow(CFG.GAP_MULT, this.tier));
+      this.speed = CFG.BASE_SPEED * Math.pow(spdMult, this.tier) * this.spdScale;
+      this.gapPx = Math.max(gapMin, this.H * CFG.GAP_START_FRAC * Math.pow(gapMult, this.tier));
     }
 
     Input.update();
