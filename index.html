@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="AuraBall" />
+  <title>AuraBall — Sensory Rehabilitation System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ═══════════════════════════════════════════════════
+       GLOBAL RESET & CSS VARIABLES — Med-Tech Minimalist
+       ═══════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-900:   #0f172a;
+      --bg-800:   #1e293b;
+      --bg-700:   #334155;
+      --cyan:     #22d3ee;
+      --cyan-dim: rgba(34, 211, 238, 0.12);
+      --red:      #f87171;
+      --red-dim:  rgba(248, 113, 113, 0.18);
+      --text:     #e2e8f0;
+      --text-dim: #64748b;
+      --border:   rgba(34, 211, 238, 0.22);
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--bg-900);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Prevent default touch/select only on game interaction elements */
+    #game-canvas, #touch-btn {
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ─── Screen Manager ─── */
+    .screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+      z-index: 10;
+      overflow-y: auto;
+    }
+    .screen.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* ─── Scrollable screen content ─── */
+    .screen-inner {
+      min-height: min-content;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    /* ─── Input Fields ─── */
+    .input-field {
+      width: 100%;
+      background: var(--bg-900);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+      padding: 11px 14px;
+      outline: none;
+      border-radius: 2px;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+    .input-field::placeholder { color: var(--text-dim); }
+    .input-field:focus { border-color: var(--cyan); }
+
+    /* ─── Primary Button ─── */
+    .btn {
+      position: relative;
+      overflow: hidden;
+      background: transparent;
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+      padding: 12px 32px;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: color 0.22s ease;
+      touch-action: manipulation;
+    }
+    .btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--cyan);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.22s ease;
+      z-index: -1;
+    }
+    .btn:hover { color: var(--bg-900); }
+    .btn:hover::after { transform: scaleX(1); }
+    .btn:active::after { transform: scaleX(1); }
+    .btn:active { color: var(--bg-900); }
+
+    .btn-ghost {
+      border-color: var(--text-dim);
+      color: var(--text-dim);
+    }
+    .btn-ghost::after { background: var(--text-dim); }
+    .btn-ghost:hover { color: var(--bg-900); }
+
+    /* ─── Error text ─── */
+    .error-msg {
+      font-size: 10px;
+      color: var(--red);
+      letter-spacing: 0.06em;
+      min-height: 16px;
+      text-align: center;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       LOGIN SCREEN
+       ═══════════════════════════════════════════════════ */
+    #login-screen .login-wrap {
+      display: grid;
+      grid-template-columns: 320px 360px;
+      gap: 32px;
+      align-items: start;
+      width: min(720px, 95vw);
+    }
+
+    .login-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding: 40px 36px;
+      border: 1px solid var(--border);
+      background: var(--bg-800);
+    }
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .logo-orb {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 38% 38%, #b2f5ff, rgba(34,211,238,0.08));
+      box-shadow: 0 0 20px rgba(34,211,238,0.28);
+      flex-shrink: 0;
+    }
+    .logo-text h1 { font-size: 26px; font-weight: 300; letter-spacing: 0.06em; }
+    .logo-text p  { font-size: 9px; color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 3px; }
+
+    .login-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .login-btn-row {
+      display: flex;
+      gap: 10px;
+    }
+    .login-btn-row .btn { flex: 1; padding: 12px 10px; font-size: 10px; }
+
+    /* Scoreboard panel */
+    .scoreboard-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 24px;
+      border: 1px solid var(--border);
+      background: var(--bg-800);
+      min-height: 260px;
+    }
+
+    .scoreboard-title {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .score-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(34,211,238,0.07);
+    }
+    .score-rank {
+      font-size: 9px;
+      color: var(--text-dim);
+      font-variant-numeric: tabular-nums;
+      width: 18px;
+      text-align: right;
+    }
+    .score-rank.gold   { color: #fbbf24; }
+    .score-rank.silver { color: #94a3b8; }
+    .score-rank.bronze { color: #b45309; }
+    .score-name  { flex: 1; font-size: 12px; font-weight: 400; color: var(--text); }
+    .score-name.me { color: var(--cyan); }
+    .score-val   { font-size: 12px; font-weight: 300; color: var(--cyan); font-variant-numeric: tabular-nums; }
+    .score-unit  { font-size: 9px; color: var(--text-dim); }
+    .score-empty { font-size: 11px; color: var(--text-dim); text-align: center; padding: 20px 0; }
+
+    /* ═══════════════════════════════════════════════════
+       CALIBRATION SCREEN
+       ═══════════════════════════════════════════════════ */
+    #calibration-screen .layout {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      gap: 48px;
+      align-items: start;
+      width: min(860px, 95vw);
+      padding: 48px;
+    }
+
+    .gauge-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      user-select: none;
+    }
+    .gauge-label-xs {
+      font-size: 9px; font-weight: 600; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--text-dim);
+    }
+    .gauge-outer { position: relative; display: flex; align-items: stretch; }
+    .gauge-track {
+      width: 28px; height: 380px;
+      background: var(--bg-800);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      position: relative;
+      overflow: hidden;
+    }
+    .gauge-fill {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(to top, var(--cyan), rgba(34,211,238,0.35));
+      transition: height 0.045s linear;
+      border-radius: 1px;
+    }
+    #gauge-peak {
+      position: absolute; left: -4px; right: -4px; height: 2px;
+      background: var(--cyan); box-shadow: 0 0 6px var(--cyan);
+      display: none; pointer-events: none;
+    }
+    .gauge-marks  { position: absolute; inset: 0; pointer-events: none; }
+    .gauge-labels { position: absolute; top: 0; bottom: 0; right: calc(100% + 8px); width: 26px; pointer-events: none; }
+    .gauge-num {
+      position: absolute; right: 0; font-size: 8px; font-weight: 500;
+      color: var(--text-dim); font-variant-numeric: tabular-nums;
+      transform: translateY(-50%);
+    }
+
+    .calib-panel { display: flex; flex-direction: column; gap: 20px; }
+    .calib-header h2 { font-size: 26px; font-weight: 300; letter-spacing: -0.02em; }
+    .calib-header p  { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+
+    .info-box { background: var(--bg-800); border: 1px solid var(--border); padding: 14px 16px; border-radius: 2px; }
+    .info-box p { font-size: 12px; line-height: 1.85; color: var(--text-dim); }
+    .key-chip {
+      display: inline-block; background: var(--bg-700);
+      border: 1px solid var(--border); padding: 1px 7px;
+      font-size: 10px; color: var(--cyan); border-radius: 2px;
+    }
+
+    .pressure-readout {
+      display: flex; align-items: baseline; gap: 8px;
+      padding: 10px 16px; background: var(--bg-800); border: 1px solid var(--border);
+    }
+    .pressure-readout .val {
+      font-size: 38px; font-weight: 300; color: var(--cyan);
+      font-variant-numeric: tabular-nums; line-height: 1; min-width: 72px;
+    }
+    .pressure-readout .unit { font-size: 11px; color: var(--text-dim); }
+
+    .test-area-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .test-label-xs   { font-size: 9px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-dim); }
+    .test-label-cyan { font-size: 9px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--cyan); }
+
+    #test-canvas { display: block; width: 100%; border: 1px solid var(--border); background: var(--bg-800); }
+
+    /* ═══════════════════════════════════════════════════
+       START SCREEN
+       ═══════════════════════════════════════════════════ */
+    #start-screen .panel {
+      display: flex; flex-direction: column; align-items: center; gap: 28px;
+      padding: 48px 64px; border: 1px solid var(--border); background: var(--bg-800);
+      min-width: 320px;
+    }
+
+    .welcome-label {
+      font-size: 10px; color: var(--text-dim); letter-spacing: 0.12em;
+      text-transform: uppercase; text-align: center;
+    }
+    .welcome-label span { color: var(--cyan); font-weight: 600; }
+
+    .toggle-card { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+    .toggle-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px; background: var(--bg-900); border: 1px solid var(--border);
+    }
+    .toggle-row-label { flex: 1; font-size: 11px; color: var(--text-dim); letter-spacing: 0.08em; text-transform: uppercase; }
+    .sw { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+    .sw input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .sw-track {
+      position: absolute; inset: 0; background: var(--bg-700);
+      border: 1px solid var(--border); border-radius: 12px; cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .sw-track::before {
+      content: ''; position: absolute; left: 3px; top: 3px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--text-dim);
+      transition: transform 0.2s, background 0.2s;
+    }
+    .sw input:checked ~ .sw-track { background: var(--cyan-dim); border-color: var(--cyan); }
+    .sw input:checked ~ .sw-track::before { transform: translateX(20px); background: var(--cyan); }
+    .mode-badge { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; color: var(--cyan); min-width: 32px; text-align: right; }
+    .toggle-hint { font-size: 10px; color: var(--text-dim); text-align: center; line-height: 1.7; }
+
+    .start-btn-group { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+    .start-btn-group .btn { width: 100%; padding: 15px; }
+
+    /* ═══════════════════════════════════════════════════
+       GAME SCREEN
+       ═══════════════════════════════════════════════════ */
+    #game-screen { padding: 0; z-index: 5; overflow: hidden; }
+    #game-canvas  { display: block; touch-action: none; }
+
+    /* Mobile hold button — shown on touch devices */
+    #touch-btn {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 40vh;
+      background: transparent;
+      border: none;
+      z-index: 25;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      touch-action: none;
+    }
+    #touch-btn.show { display: flex; }
+    .touch-hint {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.2em;
+      text-transform: uppercase; color: rgba(34,211,238,0.25);
+      pointer-events: none;
+    }
+
+    /* HUD */
+    #hud {
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+      z-index: 20;
+      display: flex; align-items: center; gap: 20px;
+      padding: 8px 18px;
+      background: rgba(15,23,42,0.82);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+      white-space: nowrap;
+    }
+    #hud.visible { opacity: 1; }
+    .hud-stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .hud-val  { font-size: 17px; font-weight: 300; color: var(--cyan); font-variant-numeric: tabular-nums; line-height: 1; }
+    .hud-key  { font-size: 7px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-dim); }
+    .hud-sep  { width: 1px; height: 24px; background: var(--border); }
+    .hud-pressure-group { display: flex; align-items: center; gap: 8px; }
+    .hud-bar-track { width: 60px; height: 3px; background: var(--bg-800); border-radius: 2px; overflow: hidden; }
+    .hud-bar-fill  { height: 100%; background: var(--cyan); border-radius: 2px; transition: width 0.04s linear; }
+
+    /* ─── System Reboot Overlay ─── */
+    #reboot-overlay {
+      position: fixed; inset: 0; z-index: 30;
+      background: var(--bg-900);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    #reboot-overlay.active { opacity: 1; pointer-events: all; }
+
+    .reboot-ring {
+      width: 56px; height: 56px;
+      border: 1.5px solid var(--red); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; font-weight: 300; color: var(--red);
+      animation: pulse-red 1.1s ease infinite;
+    }
+    .reboot-title  { font-size: 12px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: var(--red); }
+    .reboot-score  { font-size: 11px; color: var(--text-dim); letter-spacing: 0.1em; }
+    .reboot-bar-wrap { width: 160px; height: 2px; background: var(--bg-700); border-radius: 1px; overflow: hidden; }
+    .reboot-bar-fill { height: 100%; width: 0%; background: var(--red); border-radius: 1px; transition: width 2.2s ease; }
+    .reboot-new-best {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--cyan);
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .reboot-new-best.show { opacity: 1; }
+
+    /* ─── Keyframe Animations ─── */
+    @keyframes pulse-red {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(248,113,113,0.45); }
+      50%       { box-shadow: 0 0 0 10px rgba(248,113,113,0); }
+    }
+
+    /* ═══════════════════════════════════════════════════
+       MOBILE RESPONSIVE — stacks layout on small screens
+       ═══════════════════════════════════════════════════ */
+    @media (max-width: 700px) {
+      /* Login: single column */
+      #login-screen .login-wrap {
+        grid-template-columns: 1fr;
+        width: 95vw;
+        gap: 20px;
+      }
+      .login-panel, .scoreboard-panel { padding: 24px 20px; }
+
+      /* Calibration: stack gauge above panel */
+      #calibration-screen .layout {
+        grid-template-columns: 1fr;
+        padding: 20px;
+        gap: 28px;
+      }
+      /* Keep gauge vertical on mobile — JS sets style.height so keep that axis */
+      .gauge-track { height: 130px; }
+      .gauge-labels { display: none; }
+      .gauge-marks  { display: none; }
+
+      /* Start screen */
+      #start-screen .panel { padding: 32px 24px; min-width: unset; width: 92vw; }
+
+      /* HUD smaller on mobile */
+      #hud { gap: 12px; padding: 7px 14px; top: 10px; }
+      .hud-val { font-size: 14px; }
+
+      /* Touch button always visible on mobile during game */
+      #touch-btn.show { display: flex; }
+    }
+
+    @media (max-width: 480px) {
+      /* Hide speed/tier from HUD on very small screens to prevent overflow */
+      .hud-hide-sm { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════
+     SCREEN 0 — LOGIN
+     ═══════════════════════════════════════════════════ -->
+<div id="login-screen" class="screen active">
+  <div class="screen-inner">
+    <div class="login-wrap">
+
+      <!-- Login/Register panel -->
+      <div class="login-panel">
+        <div class="logo-row">
+          <div class="logo-orb"></div>
+          <div class="logo-text">
+            <h1>AuraBall</h1>
+            <p>Sensory Rehabilitation System</p>
+          </div>
+        </div>
+
+        <div class="login-fields">
+          <input class="input-field" type="text" id="login-name"
+            placeholder="Username" autocomplete="username" autocorrect="off"
+            autocapitalize="none" spellcheck="false" />
+          <input class="input-field" type="password" id="login-pass"
+            placeholder="Password" autocomplete="current-password" />
+        </div>
+
+        <div class="error-msg" id="login-error"></div>
+
+        <div class="login-btn-row">
+          <button class="btn" onclick="doLogin()">Login</button>
+          <button class="btn btn-ghost" onclick="doRegister()">Register</button>
+        </div>
+
+        <p style="font-size:9px; color:var(--text-dim); text-align:center; line-height:1.7;">
+          Data stored locally on this device only.<br>
+          ⚡ For multi-device leaderboards, connect a backend API.
+        </p>
+      </div>
+
+      <!-- Live scoreboard -->
+      <div class="scoreboard-panel">
+        <div class="scoreboard-title">&#9654; Global Leaderboard</div>
+        <div id="scoreboard-list">
+          <div class="score-empty">No scores yet — be the first!</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SCREEN 1 — CALIBRATION
+     ═══════════════════════════════════════════════════ -->
+<div id="calibration-screen" class="screen">
+  <div class="screen-inner">
+    <div class="layout">
+
+      <!-- Gauge Column -->
+      <div class="gauge-wrap">
+        <span class="gauge-label-xs">PSI</span>
+        <div class="gauge-outer">
+          <div class="gauge-labels" id="gauge-labels"></div>
+          <div class="gauge-track" id="gauge-track">
+            <div class="gauge-fill" id="gauge-fill" style="height:0%"></div>
+            <div class="gauge-marks" id="gauge-marks"></div>
+            <div id="gauge-peak"></div>
+          </div>
+        </div>
+        <span class="gauge-label-xs">0–20</span>
+      </div>
+
+      <!-- Right Panel -->
+      <div class="calib-panel">
+
+        <div class="calib-header">
+          <h2>Sensor Calibration</h2>
+          <p>Map pressure range to the 1–20 gauge scale</p>
+        </div>
+
+        <div class="info-box">
+          <p>
+            Hold <span class="key-chip">SPACE</span> (or touch &amp; hold on mobile)
+            to simulate pressure — gauge fills as force increases. Release to drain.
+          </p>
+          <p style="margin-top:8px; font-size:10px; color:rgba(100,116,139,0.7);">
+            ⚡ Hardware: replace Spacebar with pressure sensor API (see source comments).
+          </p>
+        </div>
+
+        <div class="pressure-readout">
+          <span class="val" id="pressure-val">0.0</span>
+          <span class="unit">/ 20.0 &nbsp;PSI</span>
+        </div>
+
+        <!-- Peak capture row -->
+        <div style="display:flex; align-items:center; gap:12px; padding:8px 16px; background:var(--bg-800); border:1px solid var(--border);">
+          <span style="font-size:9px; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-dim); flex:1;">Peak Pressure</span>
+          <span style="font-size:16px; font-weight:300; color:var(--cyan); font-variant-numeric:tabular-nums;" id="calib-peak-val">—</span>
+          <span style="font-size:10px; color:var(--text-dim);">/ 20</span>
+          <button class="btn btn-ghost" style="padding:4px 10px; font-size:9px;" onclick="resetCalibPeak()">Reset</button>
+        </div>
+
+        <!-- Test canvas -->
+        <div>
+          <div class="test-area-header">
+            <span class="test-label-xs">Testing Area</span>
+            <span class="test-label-cyan">Hold = Rise &nbsp;·&nbsp; Release = Fall</span>
+          </div>
+          <canvas id="test-canvas" width="560" height="140"></canvas>
+        </div>
+
+        <button class="btn" onclick="finishCalibration()">
+          Calibration Finished &rarr; Move to Start
+        </button>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SCREEN 2 — START
+     ═══════════════════════════════════════════════════ -->
+<div id="start-screen" class="screen">
+  <div class="screen-inner">
+    <div class="panel">
+
+      <p class="welcome-label">Welcome, <span id="welcome-name">—</span></p>
+
+      <div class="toggle-card">
+        <div class="toggle-row">
+          <span class="toggle-row-label">Hand Dominance</span>
+          <label class="sw">
+            <input type="checkbox" id="lefty-toggle" />
+            <span class="sw-track"></span>
+          </label>
+          <span class="mode-badge" id="mode-badge">LTR</span>
+        </div>
+        <p class="toggle-hint">LTR = Standard &nbsp;·&nbsp; RTL = Lefty (mirrored axis)</p>
+      </div>
+
+      <div style="text-align:center; font-size:10px; color:var(--cyan); letter-spacing:0.1em;" id="calib-sensitivity-label">
+        Sensitivity: default (not calibrated)
+      </div>
+
+      <div style="text-align:center; padding:10px; background:var(--bg-800); border:1px solid var(--border); margin-top:4px;">
+        <span style="font-size:9px; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-dim);">Personal Best</span>
+        <span style="font-size:18px; font-weight:300; color:var(--cyan); margin-left:12px; font-variant-numeric:tabular-nums;" id="start-best-score">—</span>
+        <span style="font-size:10px; color:var(--text-dim);">s</span>
+      </div>
+
+      <div class="start-btn-group">
+        <button class="btn" onclick="startGame()">&#9711;&ensp;Start Session</button>
+        <button class="btn btn-ghost" onclick="showScreen('calibration')">&larr; Recalibrate</button>
+        <button class="btn btn-ghost" onclick="logout()" style="font-size:9px; padding:8px;">Sign Out</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SCREEN 3 — GAME
+     ═══════════════════════════════════════════════════ -->
+<div id="game-screen" class="screen">
+  <canvas id="game-canvas"></canvas>
+</div>
+
+<!-- Mobile touch area (shown only on touch devices during game) -->
+<div id="touch-btn" aria-label="Hold to rise">
+  <span class="touch-hint">HOLD TO RISE</span>
+</div>
+
+<!-- HUD -->
+<div id="hud">
+  <div class="hud-stat">
+    <span class="hud-val" id="hud-time">0.00</span>
+    <span class="hud-key">Time (s)</span>
+  </div>
+  <div class="hud-sep hud-hide-sm"></div>
+  <div class="hud-stat hud-hide-sm">
+    <span class="hud-val" id="hud-speed">1.00×</span>
+    <span class="hud-key">Speed</span>
+  </div>
+  <div class="hud-sep hud-hide-sm"></div>
+  <div class="hud-stat hud-hide-sm">
+    <span class="hud-val" id="hud-tier">LV 1</span>
+    <span class="hud-key">Difficulty</span>
+  </div>
+  <div class="hud-sep"></div>
+  <div class="hud-pressure-group">
+    <span class="hud-key">PSI</span>
+    <div class="hud-bar-track">
+      <div class="hud-bar-fill" id="hud-bar" style="width:0%"></div>
+    </div>
+    <span class="hud-val" style="font-size:12px;" id="hud-psi">0</span>
+  </div>
+</div>
+
+<!-- System Reboot Overlay -->
+<div id="reboot-overlay">
+  <div class="reboot-ring">!</div>
+  <div class="reboot-title">System Reboot</div>
+  <div class="reboot-score" id="reboot-score">Session: 0.00 s</div>
+  <div class="reboot-new-best" id="reboot-new-best">&#9733; New Best Score!</div>
+  <div class="reboot-bar-wrap">
+    <div class="reboot-bar-fill" id="reboot-bar"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     AURABALL ENGINE — Sensory Rehabilitation Game
+
+     HARDWARE API INTEGRATION GUIDE
+     ─────────────────────────────────────────────────────────────────
+     Input currently uses Spacebar + touch. To connect a real sensor:
+
+     The only values the physics/gauge system need:
+       · Input.rawPressure  — float 0.0–1.0 (normalized pressure)
+       · Input.isActive()   — boolean, true when any pressure present
+
+     Integration options:
+       A) Polling:  set Input.rawPressure = sensor.normalized() each frame
+       B) Events:   sensor.on('data', v => Input.rawPressure = v / MAX)
+
+     All integration points are marked: ⚡ HARDWARE API
+     ═══════════════════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+/* ─────────────────────────────────────────────────────────────────────
+   CONFIG
+   ─────────────────────────────────────────────────────────────────── */
+const CFG = {
+  GRAVITY:          0.42,
+  THRUST:           0.90,
+  MAX_VEL:          14,
+  BALL_R:           13,
+  BASE_SPEED:       3.8,
+  OBS_SPACING:      290,
+  OBS_RAND:         130,
+  OBS_WIDTH:        26,
+  TRAIL_LEN:        14,
+  DIFF_EVERY:       60,
+  SPEED_MULT:       1.15,
+  GAP_MULT:         0.87,
+  GAP_START_FRAC:   0.40,
+  GAP_MIN_PX:       82,
+  C: {
+    BG:       '#0f172a',
+    BG2:      '#1e293b',
+    CYAN:     '#22d3ee',
+    RED:      '#f87171',
+    RED_FILL: 'rgba(248,113,113,0.18)',
+    RED_LINE: 'rgba(248,113,113,0.55)',
+    GAP_DASH: 'rgba(248,113,113,0.2)',
+    GRID:     'rgba(34,211,238,0.042)',
+  }
+};
+
+/* ─────────────────────────────────────────────────────────────────────
+   AUTH SYSTEM — localStorage-based user store
+   ─────────────────────────────────────────────────────────────────── */
+const Auth = {
+  // Storage schema: { username: { password: string, bestScore: number } }
+  // ⚡ HARDWARE API: replace localStorage with a real REST API /login /register /scores
+  users:   {},
+  current: null,
+
+  load() {
+    try {
+      const raw = localStorage.getItem('auraball_v1_users');
+      this.users = raw ? JSON.parse(raw) : {};
+    } catch (e) {
+      this.users = {};
+    }
+  },
+
+  _save() {
+    try {
+      localStorage.setItem('auraball_v1_users', JSON.stringify(this.users));
+    } catch (_) {}
+  },
+
+  register(name, pass) {
+    name = name.trim();
+    if (!name || !pass) return 'Enter a username and password.';
+    if (name.length < 2)  return 'Username must be at least 2 characters.';
+    if (pass.length < 3)  return 'Password must be at least 3 characters.';
+    if (this.users[name]) return 'Username already taken.';
+    this.users[name] = { password: pass, bestScore: 0 };
+    this._save();
+    this.current = name;
+    return null;
+  },
+
+  login(name, pass) {
+    name = name.trim();
+    if (!name || !pass)           return 'Enter your username and password.';
+    if (!this.users[name])        return 'User not found.';
+    if (this.users[name].password !== pass) return 'Incorrect password.';
+    this.current = name;
+    return null;
+  },
+
+  logout() { this.current = null; },
+
+  saveScore(seconds) {
+    if (!this.current) return false;
+    const user = this.users[this.current];
+    if (seconds > user.bestScore) {
+      user.bestScore = seconds;
+      this._save();
+      return true; // new best
+    }
+    return false;
+  },
+
+  getBestScore() {
+    if (!this.current || !this.users[this.current]) return 0;
+    return this.users[this.current].bestScore;
+  },
+
+  getLeaderboard() {
+    return Object.entries(this.users)
+      .map(([name, d]) => ({ name, score: d.bestScore }))
+      .filter(e => e.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 10);
+  }
+};
+
+/* ─────────────────────────────────────────────────────────────────────
+   SCOREBOARD RENDERER
+   ─────────────────────────────────────────────────────────────────── */
+function renderScoreboard() {
+  const el    = document.getElementById('scoreboard-list');
+  const board = Auth.getLeaderboard();
+  if (!board.length) {
+    el.innerHTML = '<div class="score-empty">No scores yet — be the first!</div>';
+    return;
+  }
+  const rankClass = ['gold','silver','bronze'];
+  el.innerHTML = board.map((entry, i) => {
+    const isMe = entry.name === Auth.current;
+    return `
+      <div class="score-row">
+        <span class="score-rank ${rankClass[i] || ''}">${i + 1}</span>
+        <span class="score-name ${isMe ? 'me' : ''}">${escHtml(entry.name)}${isMe ? ' ◀' : ''}</span>
+        <span class="score-val">${entry.score.toFixed(2)}</span>
+        <span class="score-unit">s</span>
+      </div>`;
+  }).join('');
+}
+
+function escHtml(s) {
+  return s.replace(/[&<>"']/g, c =>
+    ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]);
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   INPUT SYSTEM
+   ─────────────────────────────────────────────────────────────────── */
+const Input = {
+  _held:       false,
+  _ramp:       0,
+  rawPressure: 0,   // ⚡ HARDWARE API: set this to sensor.getNormalized() each frame
+
+  init() {
+    // ─ Keyboard ─
+    // ⚡ HARDWARE API: remove keyboard listeners; replace with sensor integration
+    window.addEventListener('keydown', e => {
+      if (e.code === 'Space') { e.preventDefault(); this._held = true; }
+    });
+    window.addEventListener('keyup', e => {
+      if (e.code === 'Space') { e.preventDefault(); this._held = false; }
+    });
+
+    // ─ Touch ─
+    // ⚡ HARDWARE API: touch events are the closest analog to a squeeze sensor
+    // touchstart = press, touchend/cancel = release
+    const isInteractiveScreen = () =>
+      document.getElementById('game-screen').classList.contains('active') ||
+      document.getElementById('calibration-screen').classList.contains('active');
+    const onStart = e => { if (!isInteractiveScreen()) return; e.preventDefault(); this._held = true; };
+    const onEnd   = e => { if (!isInteractiveScreen()) return; e.preventDefault(); this._held = false; };
+    window.addEventListener('touchstart',  onStart, { passive: false });
+    window.addEventListener('touchend',    onEnd,   { passive: false });
+    window.addEventListener('touchcancel', onEnd,   { passive: false });
+  },
+
+  update() {
+    // Smooth ramp — with a real sensor remove this and set rawPressure directly.
+    // ⚡ HARDWARE API: this.rawPressure = sensor.getNormalized();  return;
+    const UP   = 0.18;
+    const DOWN = 0.22;
+    this._ramp      = this._held
+      ? Math.min(1, this._ramp + UP)
+      : Math.max(0, this._ramp - DOWN);
+    this.rawPressure = this._ramp;
+  },
+
+  isActive() { return this.rawPressure > 0.01; }
+};
+
+/* ─────────────────────────────────────────────────────────────────────
+   CALIBRATION STATE
+   calibMaxPressure: peak rawPressure from calibration.
+   Dividing by it lets even a weak patient squeeze drive full thrust.
+   ⚡ HARDWARE API: set calibMaxPressure = sensor.MAX / sensor.ABSOLUTE_MAX
+   ─────────────────────────────────────────────────────────────────── */
+let calibPeak        = 0;
+let calibMaxPressure = 1.0;
+
+/* ─────────────────────────────────────────────────────────────────────
+   GAUGE SYSTEM
+   ─────────────────────────────────────────────────────────────────── */
+const Gauge = {
+  value:      0,
+  normalized: 0,
+
+  update() {
+    // ⚡ HARDWARE API: this.normalized can come directly from sensor
+    this.normalized = Math.min(1, Input.rawPressure / calibMaxPressure);
+    this.value      = this.normalized * 20;
+  }
+};
+
+/* ─────────────────────────────────────────────────────────────────────
+   SCREEN MANAGER
+   ─────────────────────────────────────────────────────────────────── */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id + '-screen');
+  if (el) el.classList.add('active');
+  document.getElementById('hud').classList.toggle('visible', id === 'game');
+  // Show touch button during game AND calibration on touch devices
+  const tb = document.getElementById('touch-btn');
+  if (isTouchDevice()) tb.classList.toggle('show', id === 'game' || id === 'calibration');
+  // Restart calibration input loop when entering calibration screen
+  if (id === 'calibration') startCalibLoop();
+  // Refresh scoreboard whenever login screen shown
+  if (id === 'login') renderScoreboard();
+}
+
+function isTouchDevice() {
+  return window.matchMedia('(hover: none)').matches || 'ontouchstart' in window;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   AUTH ACTIONS
+   ─────────────────────────────────────────────────────────────────── */
+function doLogin() {
+  const name = document.getElementById('login-name').value;
+  const pass = document.getElementById('login-pass').value;
+  const err  = Auth.login(name, pass);
+  if (err) {
+    showLoginError(err);
+  } else {
+    clearLoginError();
+    afterLogin();
+  }
+}
+
+function doRegister() {
+  const name = document.getElementById('login-name').value;
+  const pass = document.getElementById('login-pass').value;
+  const err  = Auth.register(name, pass);
+  if (err) {
+    showLoginError(err);
+  } else {
+    clearLoginError();
+    afterLogin();
+  }
+}
+
+function afterLogin() {
+  renderScoreboard();
+  updateStartBestScore();
+  showScreen('calibration');
+}
+
+function logout() {
+  Auth.logout();
+  // Reset peak for next session
+  calibPeak = 0;
+  calibMaxPressure = 1.0;
+  document.getElementById('calib-sensitivity-label').textContent = 'Sensitivity: default (not calibrated)';
+  showScreen('login');
+}
+
+function showLoginError(msg) {
+  document.getElementById('login-error').textContent = msg;
+}
+function clearLoginError() {
+  document.getElementById('login-error').textContent = '';
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   CALIBRATION SCREEN
+   ─────────────────────────────────────────────────────────────────── */
+function buildGauge() {
+  const marks  = document.getElementById('gauge-marks');
+  const labels = document.getElementById('gauge-labels');
+  const H      = 380;
+
+  for (let i = 1; i <= 20; i++) {
+    const topPct = (1 - i / 20) * 100;
+    const el     = document.createElement('div');
+    el.style.cssText = [
+      'position:absolute', `top:${topPct}%`, 'left:0', 'right:0', 'height:1px',
+      `background:${i % 5 === 0 ? 'rgba(34,211,238,0.28)' : 'rgba(34,211,238,0.1)'}`,
+    ].join(';');
+    marks.appendChild(el);
+  }
+
+  [1, 5, 10, 15, 20].forEach(n => {
+    const topPct = (1 - n / 20) * 100;
+    const el     = document.createElement('div');
+    el.className   = 'gauge-num';
+    el.style.top   = topPct + '%';
+    el.textContent = n;
+    labels.appendChild(el);
+  });
+}
+
+;(function runTestCanvas() {
+  const canvas = document.getElementById('test-canvas');
+  const ctx    = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const MIN_Y = 14, MAX_Y = H - 14;
+  let by = H / 2, bvy = 0;
+
+  function tick() {
+    // ⚡ HARDWARE API: thrust uses Gauge.normalized, same as main game
+    if (Input.isActive()) {
+      bvy -= CFG.THRUST * 0.55 * (0.45 + Gauge.normalized * 0.55);
+    }
+    bvy += CFG.GRAVITY * 0.48;
+    bvy  = Math.max(-8, Math.min(8, bvy));
+    by  += bvy;
+    by   = Math.max(MIN_Y, Math.min(MAX_Y, by));
+
+    ctx.fillStyle = CFG.C.BG2;
+    ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = CFG.C.GRID;
+    ctx.lineWidth = 1;
+    const t = Date.now() / 18;
+    for (let x = -(t % 40); x < W + 40; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    for (let y = 0; y < H; y += 28) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+
+    const heightPct = 1 - (by - MIN_Y) / (MAX_Y - MIN_Y);
+    ctx.fillStyle = 'rgba(100,116,139,0.85)';
+    ctx.font = '9px Inter,system-ui,sans-serif';
+    ctx.fillText('H: ' + (heightPct * 20).toFixed(1), 7, 13);
+
+    const grd = ctx.createRadialGradient(W / 2, by, 0, W / 2, by, 28);
+    grd.addColorStop(0, 'rgba(34,211,238,0.22)'); grd.addColorStop(1, 'transparent');
+    ctx.fillStyle = grd;
+    ctx.beginPath(); ctx.arc(W / 2, by, 28, 0, Math.PI * 2); ctx.fill();
+
+    const bg = ctx.createRadialGradient(W / 2 - 4, by - 4, 0, W / 2, by, 13);
+    bg.addColorStop(0, '#b2f5ff'); bg.addColorStop(0.5, CFG.C.CYAN); bg.addColorStop(1, '#0891b2');
+    ctx.fillStyle = bg;
+    ctx.beginPath(); ctx.arc(W / 2, by, 13, 0, Math.PI * 2); ctx.fill();
+
+    if (Input.isActive()) {
+      ctx.strokeStyle = `rgba(34,211,238,${0.5 * Gauge.normalized})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(W / 2, by, 16 + Gauge.normalized * 6, 0, Math.PI * 2); ctx.stroke();
+    }
+
+    if (document.getElementById('calibration-screen').classList.contains('active')) {
+      requestAnimationFrame(tick);
+    }
+  }
+  tick();
+})();
+
+let _calibLoopRunning = false;
+function startCalibLoop() {
+  if (_calibLoopRunning) return; // prevent duplicate loops
+  _calibLoopRunning = true;
+  function tick() {
+    Input.update();
+    Gauge.update();
+
+    if (Input.rawPressure > calibPeak) {
+      calibPeak = Input.rawPressure;
+      const peakPct = calibPeak * 100;
+      const pk = document.getElementById('gauge-peak');
+      pk.style.bottom  = peakPct + '%';
+      pk.style.display = 'block';
+      document.getElementById('calib-peak-val').textContent = (calibPeak * 20).toFixed(1);
+    }
+
+    document.getElementById('gauge-fill').style.height = (Input.rawPressure * 100) + '%';
+    document.getElementById('pressure-val').textContent = (Input.rawPressure * 20).toFixed(1);
+
+    if (document.getElementById('calibration-screen').classList.contains('active')) {
+      requestAnimationFrame(tick);
+    } else {
+      _calibLoopRunning = false; // allow restart when re-entering calibration
+    }
+  }
+  tick();
+}
+// Start on initial load if calibration screen is active
+startCalibLoop();
+
+function finishCalibration() {
+  calibMaxPressure = calibPeak > 0.05 ? calibPeak : 1.0;
+  const pct = Math.round((1 / calibMaxPressure) * 100);
+  document.getElementById('calib-sensitivity-label').textContent =
+    'Sensitivity: ' + pct + '% (peak ' + (calibMaxPressure * 20).toFixed(1) + ' PSI)';
+  document.getElementById('welcome-name').textContent = Auth.current || '—';
+  updateStartBestScore();
+  showScreen('start');
+}
+
+function updateStartBestScore() {
+  const best = Auth.getBestScore();
+  const el = document.getElementById('start-best-score');
+  el.textContent = best > 0 ? best.toFixed(2) : '—';
+}
+
+function resetCalibPeak() {
+  calibPeak = 0;
+  document.getElementById('gauge-peak').style.display = 'none';
+  document.getElementById('calib-peak-val').textContent = '—';
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   START SCREEN — hand dominance toggle
+   ─────────────────────────────────────────────────────────────────── */
+let leftyMode = false;
+document.getElementById('lefty-toggle').addEventListener('change', function () {
+  leftyMode = this.checked;
+  document.getElementById('mode-badge').textContent = leftyMode ? 'RTL' : 'LTR';
+});
+
+/* ─────────────────────────────────────────────────────────────────────
+   GAME ENGINE
+   ─────────────────────────────────────────────────────────────────── */
+const Game = {
+  canvas: null, ctx: null,
+  W: 0, H: 0,
+  running: false, raf: null,
+  ball: { x: 0, y: 0, vy: 0, trail: [] },
+  scrollX: 0, obstacles: [], nextObsX: 0,
+  speed: 0, gapPx: 0, tier: 0,
+  t0: 0, elapsed: 0,
+  shakeFrames: 0, shakeMag: 0,
+
+  init() {
+    this.canvas = document.getElementById('game-canvas');
+    this.ctx    = this.canvas.getContext('2d');
+    this.resize();
+    window.addEventListener('resize', () => this.resize());
+  },
+
+  resize() {
+    this.W = window.innerWidth;
+    this.H = window.innerHeight;
+    this.canvas.width  = this.W;
+    this.canvas.height = this.H;
+  },
+
+  reset() {
+    const startX = leftyMode ? this.W * 0.72 : this.W * 0.28;
+    this.ball        = { x: startX, y: this.H / 2, vy: 0, trail: [] };
+    this.scrollX     = 0;
+    this.obstacles   = [];
+    this.nextObsX    = this.W + 240;
+    this.speed       = CFG.BASE_SPEED;
+    this.gapPx       = this.H * CFG.GAP_START_FRAC;
+    this.tier        = 0;
+    this.t0          = performance.now();
+    this.elapsed     = 0;
+    this.shakeFrames = 0;
+    this.shakeMag    = 0;
+  },
+
+  start() { this.reset(); this.running = true; this._loop(); },
+
+  stop() {
+    this.running = false;
+    if (this.raf) { cancelAnimationFrame(this.raf); this.raf = null; }
+  },
+
+  _loop() {
+    if (!this.running) return;
+    this.raf = requestAnimationFrame(() => this._loop());
+
+    this.elapsed = (performance.now() - this.t0) / 1000;
+
+    const newTier = Math.floor(this.elapsed / CFG.DIFF_EVERY);
+    if (newTier > this.tier) {
+      this.tier  = newTier;
+      this.speed = CFG.BASE_SPEED * Math.pow(CFG.SPEED_MULT, this.tier);
+      this.gapPx = Math.max(CFG.GAP_MIN_PX, this.H * CFG.GAP_START_FRAC * Math.pow(CFG.GAP_MULT, this.tier));
+    }
+
+    Input.update();
+    Gauge.update();
+    this._physics();
+    this.scrollX += this.speed;
+    this._spawnObstacles();
+    this._cullObstacles();
+
+    if (this._checkCollision()) { this._onCollision(); return; }
+
+    this._render();
+    this._updateHUD();
+  },
+
+  _physics() {
+    const b = this.ball;
+    b.trail.push({ x: b.x, y: b.y });
+    if (b.trail.length > CFG.TRAIL_LEN) b.trail.shift();
+
+    // ⚡ HARDWARE API: Gauge.normalized (0–1) scales thrust proportionally
+    if (Input.isActive()) {
+      b.vy -= CFG.THRUST * (0.4 + Gauge.normalized * 0.6);
+    }
+    b.vy += CFG.GRAVITY;
+    b.vy  = Math.max(-CFG.MAX_VEL, Math.min(CFG.MAX_VEL, b.vy));
+    b.y  += b.vy;
+
+    const minY = CFG.BALL_R, maxY = this.H - CFG.BALL_R;
+    if (b.y < minY) { b.y = minY; b.vy = 0; }
+    if (b.y > maxY) { b.y = maxY; b.vy = 0; }
+  },
+
+  /* Gate types:
+     'top'    — solid ceiling pillar, gap below
+     'bottom' — solid floor pillar, gap above
+     'middle' — gap in center, solid top + bottom (hardest) */
+  _spawnObstacles() {
+    while (this.nextObsX - this.scrollX < this.W + 320) {
+      const roll = Math.random();
+      const type = roll < 0.33 ? 'top' : roll < 0.66 ? 'bottom' : 'middle';
+      const half = this.gapPx / 2;
+      const minC = half + 16, maxC = this.H - half - 16;
+      this.obstacles.push({
+        worldX: this.nextObsX, type,
+        gapCenter: minC + Math.random() * (maxC - minC),
+        gapPx: this.gapPx, width: CFG.OBS_WIDTH,
+      });
+      this.nextObsX += CFG.OBS_SPACING + Math.random() * CFG.OBS_RAND;
+    }
+  },
+
+  _cullObstacles() {
+    this.obstacles = this.obstacles.filter(o => (o.worldX - this.scrollX) > -150);
+  },
+
+  _checkCollision() {
+    const { x, y } = this.ball;
+    const r = CFG.BALL_R;
+    for (const o of this.obstacles) {
+      const sx = o.worldX - this.scrollX;
+      if (sx > this.W + 60 || sx < -60) continue;
+      if (x + r < sx - o.width / 2 || x - r > sx + o.width / 2) continue;
+      const half = o.gapPx / 2;
+      const topE = o.gapCenter - half, botE = o.gapCenter + half;
+      if (o.type === 'top'    && y - r < topE)                  return true;
+      if (o.type === 'bottom' && y + r > botE)                  return true;
+      if (o.type === 'middle' && (y - r < topE || y + r > botE)) return true;
+    }
+    return false;
+  },
+
+  _render() {
+    const ctx = this.ctx, { W, H } = this;
+    ctx.save();
+
+    if (this.shakeFrames > 0) {
+      ctx.translate((Math.random() - 0.5) * this.shakeMag, (Math.random() - 0.5) * this.shakeMag);
+      this.shakeFrames--;
+      this.shakeMag *= 0.80;
+    }
+
+    // ⚡ Lefty mode — mirror canvas so ball is on the right
+    if (leftyMode) { ctx.translate(W, 0); ctx.scale(-1, 1); }
+
+    ctx.fillStyle = CFG.C.BG;
+    ctx.fillRect(0, 0, W, H);
+    this._drawGrid(ctx, W, H);
+    this._drawObstacles(ctx, W, H);
+    this._drawTrail(ctx);
+    this._drawBall(ctx);
+    ctx.restore();
+  },
+
+  _drawGrid(ctx, W, H) {
+    ctx.strokeStyle = CFG.C.GRID; ctx.lineWidth = 1;
+    const SZ = 56, offX = this.scrollX % SZ;
+    for (let x = -offX; x < W + SZ; x += SZ) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    for (let y = 0; y < H + SZ; y += SZ)     { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+  },
+
+  _drawObstacles(ctx, W, H) {
+    for (const o of this.obstacles) {
+      const sx = o.worldX - this.scrollX;
+      if (sx > W + 60 || sx < -60) continue;
+      const half = o.gapPx / 2, topE = o.gapCenter - half, botE = o.gapCenter + half;
+      const ox = sx - o.width / 2;
+
+      ctx.fillStyle = CFG.C.RED_FILL; ctx.strokeStyle = CFG.C.RED_LINE; ctx.lineWidth = 1;
+      if (o.type === 'top'    || o.type === 'middle') { ctx.fillRect(ox,0,o.width,topE); ctx.strokeRect(ox+.5,.5,o.width-1,topE); }
+      if (o.type === 'bottom' || o.type === 'middle') { ctx.fillRect(ox,botE,o.width,H-botE); ctx.strokeRect(ox+.5,botE+.5,o.width-1,H-botE); }
+
+      ctx.strokeStyle = CFG.C.GAP_DASH; ctx.lineWidth = 1; ctx.setLineDash([3, 8]);
+      ctx.beginPath(); ctx.moveTo(sx, topE); ctx.lineTo(sx, botE); ctx.stroke();
+      ctx.setLineDash([]);
+
+      const dir = leftyMode ? 1 : -1, gW = 80;
+      const grd = ctx.createLinearGradient(sx + dir * gW, 0, sx, 0);
+      grd.addColorStop(0, 'transparent'); grd.addColorStop(1, 'rgba(248,113,113,0.06)');
+      ctx.fillStyle = grd;
+      if (o.type === 'top'    || o.type === 'middle') ctx.fillRect(sx + dir * gW, 0, gW, topE);
+      if (o.type === 'bottom' || o.type === 'middle') ctx.fillRect(sx + dir * gW, botE, gW, H - botE);
+    }
+  },
+
+  _drawTrail(ctx) {
+    const trail = this.ball.trail;
+    for (let i = 0; i < trail.length; i++) {
+      const t = i / trail.length;
+      ctx.beginPath();
+      ctx.arc(trail[i].x, trail[i].y, CFG.BALL_R * t * 0.65, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(34,211,238,${t * 0.32})`; ctx.fill();
+    }
+  },
+
+  _drawBall(ctx) {
+    const { x, y } = this.ball, r = CFG.BALL_R;
+    const glowG = ctx.createRadialGradient(x, y, 0, x, y, r * 3);
+    glowG.addColorStop(0, 'rgba(34,211,238,0.20)'); glowG.addColorStop(1, 'transparent');
+    ctx.fillStyle = glowG; ctx.beginPath(); ctx.arc(x, y, r * 3, 0, Math.PI * 2); ctx.fill();
+
+    const ballG = ctx.createRadialGradient(x - r*.35, y - r*.35, 0, x, y, r);
+    ballG.addColorStop(0, '#b2f5ff'); ballG.addColorStop(0.45, CFG.C.CYAN); ballG.addColorStop(1, '#0e7490');
+    ctx.fillStyle = ballG; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+
+    ctx.strokeStyle = 'rgba(255,255,255,0.26)'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke();
+
+    if (Input.isActive()) {
+      const pr = r + 5 + Gauge.normalized * 8;
+      ctx.strokeStyle = `rgba(34,211,238,${0.55 * Gauge.normalized})`; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(x, y, pr, 0, Math.PI * 2); ctx.stroke();
+    }
+  },
+
+  _updateHUD() {
+    document.getElementById('hud-time').textContent  = this.elapsed.toFixed(2);
+    document.getElementById('hud-speed').textContent = (this.speed / CFG.BASE_SPEED).toFixed(2) + '×';
+    document.getElementById('hud-tier').textContent  = 'LV ' + (this.tier + 1);
+    document.getElementById('hud-bar').style.width   = (Gauge.normalized * 100) + '%';
+    document.getElementById('hud-psi').textContent   = Gauge.value.toFixed(0);
+  },
+
+  _onCollision() {
+    const finalTime = this.elapsed;
+    this.stop();
+
+    // Save score and check for new best
+    const isNewBest = Auth.saveScore(finalTime);
+    renderScoreboard();
+
+    // Screen shake
+    this.shakeFrames = 24; this.shakeMag = 18;
+    this._render();
+
+    setTimeout(() => {
+      const overlay  = document.getElementById('reboot-overlay');
+      const bar      = document.getElementById('reboot-bar');
+      const bestEl   = document.getElementById('reboot-new-best');
+
+      document.getElementById('reboot-score').textContent = 'Session: ' + finalTime.toFixed(2) + ' s';
+
+      if (isNewBest) {
+        bestEl.classList.add('show');
+      } else {
+        bestEl.classList.remove('show');
+      }
+
+      overlay.classList.add('active');
+      requestAnimationFrame(() => { bar.style.width = '100%'; });
+
+      setTimeout(() => {
+        overlay.classList.remove('active');
+        bar.style.transition = 'none';
+        bar.style.width      = '0%';
+        requestAnimationFrame(() => { bar.style.transition = 'width 2.2s ease'; });
+        updateStartBestScore();
+        showScreen('start');
+      }, 2750);
+    }, 340);
+  }
+};
+
+/* ─────────────────────────────────────────────────────────────────────
+   ENTRY POINT
+   ─────────────────────────────────────────────────────────────────── */
+function startGame() {
+  showScreen('game');
+  Game.start();
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   BOOTSTRAP
+   ─────────────────────────────────────────────────────────────────── */
+(function bootstrap() {
+  window.addEventListener('keydown', e => { if (e.code === 'Space') e.preventDefault(); });
+
+  Auth.load();
+  Input.init();
+  Game.init();
+  buildGauge();
+  renderScoreboard();
+
+  // Wire Enter key on login inputs
+  ['login-name', 'login-pass'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') doLogin();
+    });
+  });
+})();
+</script>
+</body>
+</html>
