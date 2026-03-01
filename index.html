@@ -1175,11 +1175,17 @@ const Game = {
 
   reset() {
     const startX = leftyMode ? this.W * 0.72 : this.W * 0.28;
+    /* Mobile physics scaling — pixel-based values feel faster on small screens,
+       so we scale proportionally to viewport dimensions */
+    const rW = 1200, rH = 800;
+    this.spdScale = Math.min(1, 0.4 + 0.6 * this.W / rW);   // horizontal speed
+    this.vyScale  = Math.min(1, 0.5 + 0.5 * this.H / rH);   // vertical physics
+
     this.ball        = { x: startX, y: this.H / 2, vy: 0, trail: [] };
     this.scrollX     = 0;
     this.obstacles   = [];
     this.nextObsX    = this.W + 240;
-    this.speed       = CFG.BASE_SPEED;
+    this.speed       = CFG.BASE_SPEED * this.spdScale;
     this.gapPx       = this.H * CFG.GAP_START_FRAC;
     this.tier        = 0;
     this.t0          = performance.now();
@@ -1204,7 +1210,7 @@ const Game = {
     const newTier = Math.floor(this.elapsed / CFG.DIFF_EVERY);
     if (newTier > this.tier) {
       this.tier  = newTier;
-      this.speed = CFG.BASE_SPEED * Math.pow(CFG.SPEED_MULT, this.tier);
+      this.speed = CFG.BASE_SPEED * Math.pow(CFG.SPEED_MULT, this.tier) * this.spdScale;
       this.gapPx = Math.max(CFG.GAP_MIN_PX, this.H * CFG.GAP_START_FRAC * Math.pow(CFG.GAP_MULT, this.tier));
     }
 
@@ -1227,11 +1233,13 @@ const Game = {
     if (b.trail.length > CFG.TRAIL_LEN) b.trail.shift();
 
     // ⚡ HARDWARE API: Gauge.normalized (0–1) scales thrust proportionally
+    const vs = this.vyScale;
     if (Input.isActive()) {
-      b.vy -= CFG.THRUST * (0.4 + Gauge.normalized * 0.6);
+      b.vy -= CFG.THRUST * vs * (0.4 + Gauge.normalized * 0.6);
     }
-    b.vy += CFG.GRAVITY;
-    b.vy  = Math.max(-CFG.MAX_VEL, Math.min(CFG.MAX_VEL, b.vy));
+    b.vy += CFG.GRAVITY * vs;
+    const maxV = CFG.MAX_VEL * vs;
+    b.vy  = Math.max(-maxV, Math.min(maxV, b.vy));
     b.y  += b.vy;
 
     const minY = CFG.BALL_R, maxY = this.H - CFG.BALL_R;
