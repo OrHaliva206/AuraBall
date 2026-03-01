@@ -872,12 +872,20 @@ const Input = {
     // ─ Touch ─
     // ⚡ HARDWARE API: touch events are the closest analog to a squeeze sensor
     // touchstart = press, touchend/cancel = release
-    const isInteractiveScreen = () =>
-      document.getElementById('game-screen').classList.contains('active') ||
+    const isGameScreen = () =>
+      document.getElementById('game-screen').classList.contains('active');
+    const isCalibScreen = () =>
       document.getElementById('calibration-screen').classList.contains('active');
     const isTappableEl = e => e.target.closest('button, input, label, a, select, .btn, .sw');
-    const onStart = e => { if (!isInteractiveScreen() || isTappableEl(e)) return; e.preventDefault(); this._held = true; };
-    const onEnd   = e => { if (!isInteractiveScreen() || isTappableEl(e)) return; e.preventDefault(); this._held = false; };
+    const onStart = e => {
+      if (isGameScreen()) { e.preventDefault(); this._held = true; return; }
+      if (isCalibScreen() && !isTappableEl(e)) { this._held = true; return; }
+      // On login/start screens: do nothing — allow normal scroll and taps
+    };
+    const onEnd = e => {
+      if (isGameScreen()) { e.preventDefault(); this._held = false; return; }
+      if (isCalibScreen()) { this._held = false; return; }
+    };
     window.addEventListener('touchstart',  onStart, { passive: false });
     window.addEventListener('touchend',    onEnd,   { passive: false });
     window.addEventListener('touchcancel', onEnd,   { passive: false });
