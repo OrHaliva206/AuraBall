@@ -1241,6 +1241,9 @@ const Game = {
   reset() {
     const startX = leftyMode ? this.W * 0.72 : this.W * 0.28;
     this.vyScale = 0.70;
+    // Scale horizontal speed so the game feels the same on any screen width.
+    // On a 1200px desktop: spdScale = 1. On a 375px phone: spdScale ≈ 0.31.
+    this.spdScale = this.W / 1200;
     // Apply difficulty preset
     this.diff = DIFFICULTY[selectedDifficulty];
 
@@ -1248,7 +1251,7 @@ const Game = {
     this.scrollX     = 0;
     this.obstacles   = [];
     this.nextObsX    = this.W + 240;
-    this.speed       = this.diff.BASE_SPEED;
+    this.speed       = this.diff.BASE_SPEED * this.spdScale;
     this.gapPx       = this.H * this.diff.GAP_START_FRAC;
     this.tier        = 0;
     this.t0          = performance.now();
@@ -1274,7 +1277,7 @@ const Game = {
     const newTier = Math.floor(this.elapsed / d.DIFF_EVERY);
     if (newTier > this.tier) {
       this.tier  = newTier;
-      this.speed = d.BASE_SPEED * Math.pow(d.SPEED_MULT, this.tier);
+      this.speed = d.BASE_SPEED * Math.pow(d.SPEED_MULT, this.tier) * this.spdScale;
       this.gapPx = Math.max(d.GAP_MIN_PX, this.H * d.GAP_START_FRAC * Math.pow(d.GAP_MULT, this.tier));
     }
 
