@@ -705,6 +705,7 @@
 <div id="reboot-overlay">
   <canvas id="reboot-ball-canvas" width="120" height="120"></canvas>
   <div class="reboot-score" id="reboot-score">Score: 0.00 s</div>
+  <div class="reboot-score" id="reboot-best" style="color:var(--cyan);">Best: — s</div>
   <div class="reboot-new-best" id="reboot-new-best">&#9733; New Best Score!</div>
   <div class="reboot-btns">
     <button class="btn reboot-replay-btn" id="reboot-replay-btn">Replay</button>
@@ -1436,6 +1437,8 @@ const Game = {
       const bestEl  = document.getElementById('reboot-new-best');
 
       document.getElementById('reboot-score').textContent = 'Score: ' + finalTime.toFixed(2) + ' s';
+      const best = Auth.getBestScore();
+      document.getElementById('reboot-best').textContent = 'Best: ' + (best > 0 ? best.toFixed(2) : '—') + ' s';
       bestEl.classList.toggle('show', isNewBest);
       overlay.classList.add('active');
 
