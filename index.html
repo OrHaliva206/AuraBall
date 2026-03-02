@@ -278,6 +278,15 @@
       background: var(--cyan); box-shadow: 0 0 6px var(--cyan);
       display: none; pointer-events: none;
     }
+    #gauge-midline {
+      position: absolute; left: -2px; right: -2px; height: 1.5px; bottom: 50%;
+      background: var(--red); opacity: 0.55; pointer-events: none;
+    }
+    #gauge-midline::after {
+      content: 'TARGET'; position: absolute; right: calc(100% + 4px); top: -5px;
+      font-size: 6px; font-weight: 700; letter-spacing: 0.12em;
+      color: var(--red); opacity: 0.7; white-space: nowrap;
+    }
     .gauge-marks  { position: absolute; inset: 0; pointer-events: none; }
     .gauge-labels { position: absolute; top: 0; bottom: 0; right: calc(100% + 8px); width: 26px; pointer-events: none; }
     .gauge-num {
@@ -415,23 +424,24 @@
     }
     #reboot-overlay.active { opacity: 1; pointer-events: all; }
 
-    .reboot-ring {
-      width: 56px; height: 56px;
-      border: 1.5px solid var(--red); border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 24px; font-weight: 300; color: var(--red);
-      animation: pulse-red 1.1s ease infinite;
-    }
+    #reboot-ball-canvas { width: 120px; height: 120px; }
     .reboot-title  { font-size: 12px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: var(--red); }
     .reboot-score  { font-size: 11px; color: var(--text-dim); letter-spacing: 0.1em; }
-    .reboot-bar-wrap { width: 160px; height: 2px; background: var(--bg-700); border-radius: 1px; overflow: hidden; }
-    .reboot-bar-fill { height: 100%; width: 0%; background: var(--red); border-radius: 1px; transition: width 2.2s ease; }
     .reboot-new-best {
       font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
       text-transform: uppercase; color: var(--cyan);
       opacity: 0; transition: opacity 0.4s;
     }
     .reboot-new-best.show { opacity: 1; }
+    .reboot-btns { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 8px; }
+    .reboot-replay-btn { min-width: 160px; }
+    .reboot-home-btn {
+      width: 44px; height: 44px; min-width: unset; padding: 0;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%; background: var(--bg-700); border: 1px solid var(--border);
+      color: var(--text-dim); cursor: pointer; transition: background 0.15s, color 0.15s;
+    }
+    .reboot-home-btn:hover { background: var(--bg-800); color: var(--cyan); }
 
     /* ─── Keyframe Animations ─── */
     @keyframes pulse-red {
@@ -556,6 +566,7 @@
           <div class="gauge-track" id="gauge-track">
             <div class="gauge-fill" id="gauge-fill" style="height:0%"></div>
             <div class="gauge-marks" id="gauge-marks"></div>
+            <div id="gauge-midline"></div>
             <div id="gauge-peak"></div>
           </div>
         </div>
@@ -573,7 +584,7 @@
         <div class="info-box">
           <p>
             Hold <span class="key-chip">SPACE</span> (or touch &amp; hold on mobile)
-            to simulate pressure — gauge fills as force increases. Release to drain.
+            to simulate pressure. Push the ball up to the <b style="color:var(--red)">target line</b> — that pressure sets your game sensitivity.
           </p>
           <p style="margin-top:8px; font-size:10px; color:rgba(100,116,139,0.7);">
             ⚡ Hardware: replace Spacebar with pressure sensor API (see source comments).
@@ -692,12 +703,15 @@
 
 <!-- System Reboot Overlay -->
 <div id="reboot-overlay">
-  <div class="reboot-ring">!</div>
+  <canvas id="reboot-ball-canvas" width="120" height="120"></canvas>
   <div class="reboot-title">System Reboot</div>
   <div class="reboot-score" id="reboot-score">Session: 0.00 s</div>
   <div class="reboot-new-best" id="reboot-new-best">&#9733; New Best Score!</div>
-  <div class="reboot-bar-wrap">
-    <div class="reboot-bar-fill" id="reboot-bar"></div>
+  <div class="reboot-btns">
+    <button class="btn reboot-replay-btn" id="reboot-replay-btn">Replay</button>
+    <button class="btn reboot-home-btn" id="reboot-home-btn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-9 9 9"/><path d="M5 10v10a1 1 0 001 1h3v-6h6v6h3a1 1 0 001-1V10"/></svg>
+    </button>
   </div>
 </div>
 
@@ -1028,14 +1042,19 @@ function buildGauge() {
 }
 
 let _testCanvasRunning = false;
+let _calibMidlinePressure = 0;   // exposed for finishCalibration()
 function startTestCanvas() {
   if (_testCanvasRunning) return;
   _testCanvasRunning = true;
+  _calibMidlinePressure = 0;
   const canvas = document.getElementById('test-canvas');
   const ctx    = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
   const MIN_Y = 14, MAX_Y = H - 14;
   let by = H / 2, bvy = 0;
+
+  const MID_Y = H / 2;
+  let midlineLocked = false;
 
   function tick() {
     // ⚡ HARDWARE API: thrust uses Gauge.normalized, same as main game
@@ -1047,6 +1066,12 @@ function startTestCanvas() {
     by  += bvy;
     by   = Math.max(MIN_Y, Math.min(MAX_Y, by));
 
+    // Detect ball crossing midline while pressing — captures sensitivity reference
+    if (!midlineLocked && Input.isActive() && by <= MID_Y && Input.rawPressure > 0.05) {
+      midlineLocked = true;
+      _calibMidlinePressure = Input.rawPressure;
+    }
+
     ctx.fillStyle = CFG.C.BG2;
     ctx.fillRect(0, 0, W, H);
     ctx.strokeStyle = CFG.C.GRID;
@@ -1054,6 +1079,19 @@ function startTestCanvas() {
     const t = Date.now() / 18;
     for (let x = -(t % 40); x < W + 40; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
     for (let y = 0; y < H; y += 28) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+
+    // ── Midline ──
+    ctx.setLineDash([6, 4]);
+    ctx.strokeStyle = midlineLocked ? 'rgba(34,211,238,0.7)' : 'rgba(248,113,113,0.45)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, MID_Y); ctx.lineTo(W, MID_Y); ctx.stroke();
+    ctx.setLineDash([]);
+    // midline label
+    ctx.fillStyle = midlineLocked ? 'rgba(34,211,238,0.85)' : 'rgba(248,113,113,0.7)';
+    ctx.font = '8px Inter,system-ui,sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(midlineLocked ? 'LOCKED' : 'TARGET', W - 6, MID_Y - 5);
+    ctx.textAlign = 'left';
 
     const heightPct = 1 - (by - MIN_Y) / (MAX_Y - MIN_Y);
     ctx.fillStyle = 'rgba(100,116,139,0.85)';
@@ -1117,10 +1155,14 @@ function startCalibLoop() {
 startCalibLoop();
 
 function finishCalibration() {
-  calibMaxPressure = calibPeak > 0.05 ? calibPeak : 1.0;
+  // Prefer midline pressure (the pressure when ball first reached the target line).
+  // Fall back to peak pressure if midline was never reached.
+  const midP = _calibMidlinePressure;
+  calibMaxPressure = midP > 0.05 ? midP : (calibPeak > 0.05 ? calibPeak : 1.0);
   const pct = Math.round((1 / calibMaxPressure) * 100);
+  const src = midP > 0.05 ? 'midline' : 'peak';
   document.getElementById('calib-sensitivity-label').textContent =
-    'Sensitivity: ' + pct + '% (peak ' + (calibMaxPressure * 20).toFixed(1) + ' PSI)';
+    'Sensitivity: ' + pct + '% (' + src + ' ' + (calibMaxPressure * 20).toFixed(1) + ' PSI)';
   document.getElementById('welcome-name').textContent = Auth.current || '—';
   updateStartBestScore();
   showScreen('start');
@@ -1378,43 +1420,77 @@ const Game = {
     document.getElementById('hud-psi').textContent   = Gauge.value.toFixed(0);
   },
 
+  _rebootRaf: null,
+
   _onCollision() {
     const finalTime = this.elapsed;
     this.stop();
 
-    // Save score and check for new best
     const isNewBest = Auth.saveScore(finalTime);
     renderScoreboard();
 
-    // Screen shake
     this.shakeFrames = 24; this.shakeMag = 18;
     this._render();
 
     setTimeout(() => {
-      const overlay  = document.getElementById('reboot-overlay');
-      const bar      = document.getElementById('reboot-bar');
-      const bestEl   = document.getElementById('reboot-new-best');
+      const overlay = document.getElementById('reboot-overlay');
+      const bestEl  = document.getElementById('reboot-new-best');
 
       document.getElementById('reboot-score').textContent = 'Session: ' + finalTime.toFixed(2) + ' s';
-
-      if (isNewBest) {
-        bestEl.classList.add('show');
-      } else {
-        bestEl.classList.remove('show');
-      }
-
+      bestEl.classList.toggle('show', isNewBest);
       overlay.classList.add('active');
-      requestAnimationFrame(() => { bar.style.width = '100%'; });
 
-      setTimeout(() => {
+      // Bouncing ball animation
+      this._startRebootBall();
+
+      // Button handlers
+      const replay = document.getElementById('reboot-replay-btn');
+      const home   = document.getElementById('reboot-home-btn');
+      const cleanup = () => {
+        this._stopRebootBall();
         overlay.classList.remove('active');
-        bar.style.transition = 'none';
-        bar.style.width      = '0%';
-        requestAnimationFrame(() => { bar.style.transition = 'width 2.2s ease'; });
         updateStartBestScore();
-        showScreen('start');
-      }, 2750);
+        replay.removeEventListener('click', onReplay);
+        home.removeEventListener('click', onHome);
+      };
+      const onReplay = () => { cleanup(); startGame(); };
+      const onHome   = () => { cleanup(); showScreen('login'); };
+      replay.addEventListener('click', onReplay);
+      home.addEventListener('click', onHome);
     }, 340);
+  },
+
+  _startRebootBall() {
+    const c = document.getElementById('reboot-ball-canvas');
+    const ctx = c.getContext('2d');
+    const W = c.width, H = c.height;
+    const cx = W / 2, r = 13;
+    let t = 0;
+    const draw = () => {
+      t += 0.04;
+      const by = H / 2 + Math.sin(t * 2.2) * 18;
+      ctx.clearRect(0, 0, W, H);
+      // shadow
+      const sw = 20 + 6 * ((by - H / 2 + 18) / 36);
+      ctx.fillStyle = 'rgba(34,211,238,0.08)';
+      ctx.beginPath(); ctx.ellipse(cx, H - 12, sw, 4, 0, 0, Math.PI * 2); ctx.fill();
+      // glow
+      const grd = ctx.createRadialGradient(cx, by, 0, cx, by, 28);
+      grd.addColorStop(0, 'rgba(34,211,238,0.18)'); grd.addColorStop(1, 'transparent');
+      ctx.fillStyle = grd;
+      ctx.beginPath(); ctx.arc(cx, by, 28, 0, Math.PI * 2); ctx.fill();
+      // ball
+      const bg = ctx.createRadialGradient(cx - 4, by - 4, 0, cx, by, r);
+      bg.addColorStop(0, '#b2f5ff'); bg.addColorStop(0.5, '#22d3ee'); bg.addColorStop(1, '#0891b2');
+      ctx.fillStyle = bg;
+      ctx.beginPath(); ctx.arc(cx, by, r, 0, Math.PI * 2); ctx.fill();
+      this._rebootRaf = requestAnimationFrame(draw);
+    };
+    draw();
+  },
+
+  _stopRebootBall() {
+    if (this._rebootRaf) { cancelAnimationFrame(this._rebootRaf); this._rebootRaf = null; }
   }
 };
 
