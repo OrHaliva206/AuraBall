@@ -1,6 +1,6 @@
 # AuraBall
 
-A sensory rehabilitation game built with HTML5 Canvas. Designed for use with pressure-sensor gloves in physiotherapy — currently playable with keyboard (Space) and touch controls.
+A sensory rehabilitation game built with HTML5 Canvas. Currently playable with keyboard (Space) and touch controls.
 
 **Play now:** [orhaliva206.github.io/AuraBall](https://orhaliva206.github.io/AuraBall/)
 
