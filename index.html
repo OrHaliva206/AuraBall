@@ -704,8 +704,7 @@
 <!-- System Reboot Overlay -->
 <div id="reboot-overlay">
   <canvas id="reboot-ball-canvas" width="120" height="120"></canvas>
-  <div class="reboot-title">System Reboot</div>
-  <div class="reboot-score" id="reboot-score">Session: 0.00 s</div>
+  <div class="reboot-score" id="reboot-score">Score: 0.00 s</div>
   <div class="reboot-new-best" id="reboot-new-best">&#9733; New Best Score!</div>
   <div class="reboot-btns">
     <button class="btn reboot-replay-btn" id="reboot-replay-btn">Replay</button>
@@ -1436,7 +1435,7 @@ const Game = {
       const overlay = document.getElementById('reboot-overlay');
       const bestEl  = document.getElementById('reboot-new-best');
 
-      document.getElementById('reboot-score').textContent = 'Session: ' + finalTime.toFixed(2) + ' s';
+      document.getElementById('reboot-score').textContent = 'Score: ' + finalTime.toFixed(2) + ' s';
       bestEl.classList.toggle('show', isNewBest);
       overlay.classList.add('active');
 
