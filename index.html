@@ -362,6 +362,22 @@
     .mode-badge { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; color: var(--cyan); min-width: 32px; text-align: right; }
     .toggle-hint { font-size: 10px; color: var(--text-dim); text-align: center; line-height: 1.7; }
 
+    .difficulty-selector { width: 100%; text-align: center; }
+    .diff-label {
+      font-size: 9px; font-weight: 600; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--text-dim); display: block; margin-bottom: 8px;
+    }
+    .diff-btns { display: flex; gap: 0; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+    .diff-btn {
+      flex: 1; padding: 10px 0; font-size: 10px; font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase; background: var(--bg-900); color: var(--text-dim);
+      border: none; cursor: pointer; transition: background 0.15s, color 0.15s;
+      font-family: inherit;
+    }
+    .diff-btn + .diff-btn { border-left: 1px solid var(--border); }
+    .diff-btn:hover { background: var(--bg-700); color: var(--text); }
+    .diff-btn.active { background: var(--cyan); color: var(--bg-900); }
+
     .start-btn-group { display: flex; flex-direction: column; gap: 10px; width: 100%; }
     .start-btn-group .btn { width: 100%; padding: 15px; }
 
@@ -653,6 +669,15 @@
         <span style="font-size:10px; color:var(--text-dim);">s</span>
       </div>
 
+      <div class="difficulty-selector">
+        <span class="diff-label">Difficulty</span>
+        <div class="diff-btns">
+          <button class="diff-btn" data-diff="easy" onclick="pickDifficulty('easy')">Easy</button>
+          <button class="diff-btn active" data-diff="medium" onclick="pickDifficulty('medium')">Medium</button>
+          <button class="diff-btn" data-diff="hard" onclick="pickDifficulty('hard')">Hard</button>
+        </div>
+      </div>
+
       <div class="start-btn-group">
         <button class="btn" onclick="startGame()">&#9711;&ensp;Start Session</button>
         <button class="btn btn-ghost" onclick="showScreen('calibration')">&larr; Recalibrate</button>
@@ -738,6 +763,13 @@
 /* ─────────────────────────────────────────────────────────────────────
    CONFIG
    ─────────────────────────────────────────────────────────────────── */
+const DIFFICULTY = {
+  easy:   { BASE_SPEED: 2.2, GRAVITY: 0.28, THRUST: 0.60, MAX_VEL: 9,  GAP_START_FRAC: 0.50, GAP_MIN_PX: 120, DIFF_EVERY: 120, SPEED_MULT: 1.06, GAP_MULT: 0.95 },
+  medium: { BASE_SPEED: 3.2, GRAVITY: 0.36, THRUST: 0.75, MAX_VEL: 12, GAP_START_FRAC: 0.42, GAP_MIN_PX: 95,  DIFF_EVERY: 80,  SPEED_MULT: 1.10, GAP_MULT: 0.90 },
+  hard:   { BASE_SPEED: 3.8, GRAVITY: 0.42, THRUST: 0.90, MAX_VEL: 14, GAP_START_FRAC: 0.40, GAP_MIN_PX: 82,  DIFF_EVERY: 60,  SPEED_MULT: 1.15, GAP_MULT: 0.87 },
+};
+let selectedDifficulty = 'medium';
+
 const CFG = {
   GRAVITY:          0.42,
   THRUST:           0.90,
@@ -1223,17 +1255,16 @@ const Game = {
 
   reset() {
     const startX = leftyMode ? this.W * 0.72 : this.W * 0.28;
-    /* Mobile physics scaling — pixel-based values feel faster on small screens,
-       so we scale proportionally to viewport dimensions */
-    this.spdScale = 1;
-    this.vyScale  = 0.70;                        // consistent vertical feel on all screens
+    this.vyScale = 0.70;
+    // Apply difficulty preset
+    this.diff = DIFFICULTY[selectedDifficulty];
 
     this.ball        = { x: startX, y: this.H / 2, vy: 0, trail: [] };
     this.scrollX     = 0;
     this.obstacles   = [];
     this.nextObsX    = this.W + 240;
-    this.speed       = CFG.BASE_SPEED * this.spdScale;
-    this.gapPx       = this.H * CFG.GAP_START_FRAC;
+    this.speed       = this.diff.BASE_SPEED;
+    this.gapPx       = this.H * this.diff.GAP_START_FRAC;
     this.tier        = 0;
     this.t0          = performance.now();
     this.elapsed     = 0;
@@ -1254,11 +1285,12 @@ const Game = {
 
     this.elapsed = (performance.now() - this.t0) / 1000;
 
-    const newTier = Math.floor(this.elapsed / CFG.DIFF_EVERY);
+    const d = this.diff;
+    const newTier = Math.floor(this.elapsed / d.DIFF_EVERY);
     if (newTier > this.tier) {
       this.tier  = newTier;
-      this.speed = CFG.BASE_SPEED * Math.pow(CFG.SPEED_MULT, this.tier);
-      this.gapPx = Math.max(CFG.GAP_MIN_PX, this.H * CFG.GAP_START_FRAC * Math.pow(CFG.GAP_MULT, this.tier));
+      this.speed = d.BASE_SPEED * Math.pow(d.SPEED_MULT, this.tier);
+      this.gapPx = Math.max(d.GAP_MIN_PX, this.H * d.GAP_START_FRAC * Math.pow(d.GAP_MULT, this.tier));
     }
 
     Input.update();
@@ -1280,12 +1312,12 @@ const Game = {
     if (b.trail.length > CFG.TRAIL_LEN) b.trail.shift();
 
     // ⚡ HARDWARE API: Gauge.normalized (0–1) scales thrust proportionally
-    const vs = this.vyScale;
+    const d = this.diff, vs = this.vyScale;
     if (Input.isActive()) {
-      b.vy -= CFG.THRUST * vs * (0.4 + Gauge.normalized * 0.6);
+      b.vy -= d.THRUST * vs * (0.4 + Gauge.normalized * 0.6);
     }
-    b.vy += CFG.GRAVITY * vs;
-    const maxV = CFG.MAX_VEL * vs;
+    b.vy += d.GRAVITY * vs;
+    const maxV = d.MAX_VEL * vs;
     b.vy  = Math.max(-maxV, Math.min(maxV, b.vy));
     b.y  += b.vy;
 
@@ -1503,6 +1535,12 @@ const Game = {
 /* ─────────────────────────────────────────────────────────────────────
    ENTRY POINT
    ─────────────────────────────────────────────────────────────────── */
+function pickDifficulty(level) {
+  selectedDifficulty = level;
+  document.querySelectorAll('.diff-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.diff === level));
+}
+
 function startGame() {
   showScreen('game');
   Game.start();
