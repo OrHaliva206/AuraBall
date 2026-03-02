@@ -50,6 +50,20 @@
       justify-content: center;
     }
 
+    /* ─── Nebula Background ─── */
+    @keyframes nebula-drift {
+      0%   { transform: translate(0, 0) scale(1); }
+      33%  { transform: translate(4%, -3%) scale(1.05); }
+      66%  { transform: translate(-3%, 4%) scale(0.97); }
+      100% { transform: translate(0, 0) scale(1); }
+    }
+    @keyframes nebula-drift2 {
+      0%   { transform: translate(0, 0) scale(1.02); }
+      33%  { transform: translate(-5%, 3%) scale(0.95); }
+      66%  { transform: translate(3%, -2%) scale(1.06); }
+      100% { transform: translate(0, 0) scale(1.02); }
+    }
+
     /* ─── Screen Manager ─── */
     .screen {
       position: fixed;
@@ -66,6 +80,33 @@
     .screen.active {
       opacity: 1;
       pointer-events: all;
+    }
+
+    /* Nebula background — global layers behind all screens */
+    #nebula {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9;
+      overflow: hidden;
+    }
+    #nebula .n1, #nebula .n2 {
+      position: absolute;
+      inset: -30%;
+    }
+    #nebula .n1 {
+      background:
+        radial-gradient(ellipse 55% 45% at 18% 25%, rgba(34, 211, 238, 0.18) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 55% at 78% 70%, rgba(139, 92, 246, 0.22) 0%, transparent 65%),
+        radial-gradient(ellipse 65% 40% at 50% 10%, rgba(34, 211, 238, 0.12) 0%, transparent 60%);
+      animation: nebula-drift 25s ease-in-out infinite;
+    }
+    #nebula .n2 {
+      background:
+        radial-gradient(ellipse 45% 60% at 72% 20%, rgba(168, 85, 247, 0.18) 0%, transparent 65%),
+        radial-gradient(ellipse 60% 45% at 25% 80%, rgba(34, 211, 238, 0.15) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 50% at 85% 75%, rgba(248, 113, 113, 0.12) 0%, transparent 60%);
+      animation: nebula-drift2 30s ease-in-out infinite;
     }
 
     /* ─── Scrollable screen content ─── */
@@ -437,6 +478,7 @@
       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
       opacity: 0; pointer-events: none;
       transition: opacity 0.25s;
+      overflow: hidden;
     }
     #reboot-overlay.active { opacity: 1; pointer-events: all; }
 
@@ -516,6 +558,9 @@
   </style>
 </head>
 <body>
+
+<!-- Nebula background — visible behind all screens -->
+<div id="nebula"><div class="n1"></div><div class="n2"></div></div>
 
 <!-- ═══════════════════════════════════════════════════
      SCREEN 0 — LOGIN
@@ -752,9 +797,9 @@
    CONFIG
    ─────────────────────────────────────────────────────────────────── */
 const DIFFICULTY = {
-  easy:   { BASE_SPEED: 4.0, GRAVITY: 0.42, THRUST: 0.90, MAX_VEL: 12, GAP_START_FRAC: 0.48, GAP_MIN_PX: 110, DIFF_EVERY: 90,  SPEED_MULT: 1.08, GAP_MULT: 0.94 },
-  medium: { BASE_SPEED: 6.0, GRAVITY: 0.58, THRUST: 1.20, MAX_VEL: 16, GAP_START_FRAC: 0.42, GAP_MIN_PX: 90,  DIFF_EVERY: 60,  SPEED_MULT: 1.12, GAP_MULT: 0.90 },
-  hard:   { BASE_SPEED: 8.0, GRAVITY: 0.76, THRUST: 1.60, MAX_VEL: 21, GAP_START_FRAC: 0.38, GAP_MIN_PX: 75,  DIFF_EVERY: 45,  SPEED_MULT: 1.15, GAP_MULT: 0.87 },
+  easy:   { BASE_SPEED: 10, GRAVITY: 0.52, THRUST: 1.10, MAX_VEL: 15, GAP_START_FRAC: 0.48, GAP_MIN_PX: 110, DIFF_EVERY: 90,  SPEED_MULT: 1.08, GAP_MULT: 0.94 },
+  medium: { BASE_SPEED: 12, GRAVITY: 0.68, THRUST: 1.45, MAX_VEL: 19, GAP_START_FRAC: 0.42, GAP_MIN_PX: 90,  DIFF_EVERY: 60,  SPEED_MULT: 1.12, GAP_MULT: 0.90 },
+  hard:   { BASE_SPEED: 14, GRAVITY: 0.88, THRUST: 1.85, MAX_VEL: 24, GAP_START_FRAC: 0.38, GAP_MIN_PX: 75,  DIFF_EVERY: 45,  SPEED_MULT: 1.15, GAP_MULT: 0.87 },
 };
 let selectedDifficulty = 'medium';
 
@@ -934,8 +979,8 @@ const Input = {
     // Smooth ramp — with a real sensor remove this and set rawPressure directly.
     // ⚡ HARDWARE API: this.rawPressure = sensor.getNormalized();  return;
     const mob  = window.innerWidth < 700;
-    const UP   = mob ? 0.10 : 0.18;   // slower ramp-up on mobile → less sensitive
-    const DOWN = mob ? 0.14 : 0.22;
+    const UP   = mob ? 0.14 : 0.24;   // faster ramp to match higher speeds
+    const DOWN = mob ? 0.18 : 0.28;
     this._ramp      = this._held
       ? Math.min(1, this._ramp + UP)
       : Math.max(0, this._ramp - DOWN);
@@ -1240,7 +1285,7 @@ const Game = {
 
   reset() {
     const startX = leftyMode ? this.W * 0.72 : this.W * 0.28;
-    this.vyScale = 0.70;
+    this.vyScale = 0.88;
     // Scale horizontal speed so the game feels the same on any screen width.
     // On a 1200px desktop: spdScale = 1. On a 375px phone: spdScale ≈ 0.31.
     this.spdScale = this.W / 1200;
@@ -1366,13 +1411,37 @@ const Game = {
     // ⚡ Lefty mode — mirror canvas so ball is on the right
     if (leftyMode) { ctx.translate(W, 0); ctx.scale(-1, 1); }
 
-    ctx.fillStyle = CFG.C.BG;
-    ctx.fillRect(0, 0, W, H);
+    this._drawSky(ctx, W, H);
     this._drawGrid(ctx, W, H);
     this._drawObstacles(ctx, W, H);
     this._drawTrail(ctx);
     this._drawBall(ctx);
     ctx.restore();
+  },
+
+  _drawSky(ctx, W, H) {
+    // Sky gradient shifts color as difficulty tier increases
+    const t = Math.min(this.tier / 6, 1);  // 0→1 over 6 tiers
+    // Interpolate between color stages: deep blue → purple → dark crimson
+    const stages = [
+      { r: 15, g: 23, b: 42 },   // #0f172a — starting deep blue
+      { r: 30, g: 20, b: 60 },   // dark indigo
+      { r: 55, g: 15, b: 60 },   // deep purple
+      { r: 70, g: 12, b: 35 },   // dark crimson
+    ];
+    const pos = t * (stages.length - 1);
+    const i = Math.min(Math.floor(pos), stages.length - 2);
+    const f = pos - i;
+    const c1 = stages[i], c2 = stages[i + 1];
+    const r = Math.round(c1.r + (c2.r - c1.r) * f);
+    const g = Math.round(c1.g + (c2.g - c1.g) * f);
+    const b = Math.round(c1.b + (c2.b - c1.b) * f);
+    // Vertical gradient: top is slightly lighter
+    const grd = ctx.createLinearGradient(0, 0, 0, H);
+    grd.addColorStop(0, `rgb(${r + 12},${g + 8},${b + 15})`);
+    grd.addColorStop(1, `rgb(${r},${g},${b})`);
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, W, H);
   },
 
   _drawGrid(ctx, W, H) {
