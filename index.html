@@ -892,12 +892,18 @@ const Input = {
       document.getElementById('calibration-screen').classList.contains('active');
     const isTappableEl = e => e.target.closest('button, input, label, a, select, .btn, .sw');
     const onStart = e => {
-      if (isGameScreen()) { e.preventDefault(); this._held = true; return; }
+      if (isGameScreen()) {
+        if (isTappableEl(e)) return;   // allow reboot overlay buttons
+        e.preventDefault(); this._held = true; return;
+      }
       if (isCalibScreen() && !isTappableEl(e)) { this._held = true; return; }
       // On login/start screens: do nothing — allow normal scroll and taps
     };
     const onEnd = e => {
-      if (isGameScreen()) { e.preventDefault(); this._held = false; return; }
+      if (isGameScreen()) {
+        if (isTappableEl(e)) return;
+        e.preventDefault(); this._held = false; return;
+      }
       if (isCalibScreen()) { this._held = false; return; }
     };
     window.addEventListener('touchstart',  onStart, { passive: false });
@@ -1220,9 +1226,8 @@ const Game = {
     const startX = leftyMode ? this.W * 0.72 : this.W * 0.28;
     /* Mobile physics scaling — pixel-based values feel faster on small screens,
        so we scale proportionally to viewport dimensions */
-    const isMob = this.W < 700;
-    this.spdScale = 1;                          // same scroll speed as desktop
-    this.vyScale  = isMob ? 0.70 : 1;           // softer vertical response on mobile
+    this.spdScale = 1;
+    this.vyScale  = 0.70;                        // consistent vertical feel on all screens
 
     this.ball        = { x: startX, y: this.H / 2, vy: 0, trail: [] };
     this.scrollX     = 0;
