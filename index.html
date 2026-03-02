@@ -607,17 +607,14 @@
           </p>
         </div>
 
-        <div class="pressure-readout">
-          <span class="val" id="pressure-val">0.0</span>
-          <span class="unit">/ 20.0 &nbsp;PSI</span>
-        </div>
-
-        <!-- Peak capture row -->
-        <div style="display:flex; align-items:center; gap:12px; padding:8px 16px; background:var(--bg-800); border:1px solid var(--border);">
-          <span style="font-size:9px; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-dim); flex:1;">Peak Pressure</span>
-          <span style="font-size:16px; font-weight:300; color:var(--cyan); font-variant-numeric:tabular-nums;" id="calib-peak-val">—</span>
-          <span style="font-size:10px; color:var(--text-dim);">/ 20</span>
-          <button class="btn btn-ghost" style="padding:4px 10px; font-size:9px;" onclick="resetCalibPeak()">Reset</button>
+        <!-- Difficulty selector -->
+        <div class="difficulty-selector">
+          <span class="diff-label">Difficulty</span>
+          <div class="diff-btns">
+            <button class="diff-btn" data-diff="easy" onclick="pickDifficulty('easy')">Easy</button>
+            <button class="diff-btn active" data-diff="medium" onclick="pickDifficulty('medium')">Medium</button>
+            <button class="diff-btn" data-diff="hard" onclick="pickDifficulty('hard')">Hard</button>
+          </div>
         </div>
 
         <!-- Test canvas -->
@@ -667,15 +664,6 @@
         <span style="font-size:9px; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-dim);">Personal Best</span>
         <span style="font-size:18px; font-weight:300; color:var(--cyan); margin-left:12px; font-variant-numeric:tabular-nums;" id="start-best-score">—</span>
         <span style="font-size:10px; color:var(--text-dim);">s</span>
-      </div>
-
-      <div class="difficulty-selector">
-        <span class="diff-label">Difficulty</span>
-        <div class="diff-btns">
-          <button class="diff-btn" data-diff="easy" onclick="pickDifficulty('easy')">Easy</button>
-          <button class="diff-btn active" data-diff="medium" onclick="pickDifficulty('medium')">Medium</button>
-          <button class="diff-btn" data-diff="hard" onclick="pickDifficulty('hard')">Hard</button>
-        </div>
       </div>
 
       <div class="start-btn-group">
@@ -1174,11 +1162,9 @@ function startCalibLoop() {
       const pk = document.getElementById('gauge-peak');
       pk.style.bottom  = peakPct + '%';
       pk.style.display = 'block';
-      document.getElementById('calib-peak-val').textContent = (calibPeak * 20).toFixed(1);
     }
 
     document.getElementById('gauge-fill').style.height = (Input.rawPressure * 100) + '%';
-    document.getElementById('pressure-val').textContent = (Input.rawPressure * 20).toFixed(1);
 
     if (document.getElementById('calibration-screen').classList.contains('active')) {
       requestAnimationFrame(tick);
@@ -1214,7 +1200,6 @@ function updateStartBestScore() {
 function resetCalibPeak() {
   calibPeak = 0;
   document.getElementById('gauge-peak').style.display = 'none';
-  document.getElementById('calib-peak-val').textContent = '—';
 }
 
 /* ─────────────────────────────────────────────────────────────────────
@@ -1492,7 +1477,7 @@ const Game = {
         home.removeEventListener('click', onHome);
       };
       const onReplay = () => { cleanup(); startGame(); };
-      const onHome   = () => { cleanup(); showScreen('login'); };
+      const onHome   = () => { cleanup(); showScreen('calibration'); };
       replay.addEventListener('click', onReplay);
       home.addEventListener('click', onHome);
     }, 340);
