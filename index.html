@@ -891,17 +891,16 @@ const Input = {
     const isCalibScreen = () =>
       document.getElementById('calibration-screen').classList.contains('active');
     const isTappableEl = e => e.target.closest('button, input, label, a, select, .btn, .sw');
+    const rebootActive = () =>
+      document.getElementById('reboot-overlay').classList.contains('active');
     const onStart = e => {
-      if (isGameScreen()) {
-        if (isTappableEl(e)) return;   // allow reboot overlay buttons
+      if (isGameScreen() && !rebootActive()) {
         e.preventDefault(); this._held = true; return;
       }
       if (isCalibScreen() && !isTappableEl(e)) { this._held = true; return; }
-      // On login/start screens: do nothing — allow normal scroll and taps
     };
     const onEnd = e => {
-      if (isGameScreen()) {
-        if (isTappableEl(e)) return;
+      if (isGameScreen() && !rebootActive()) {
         e.preventDefault(); this._held = false; return;
       }
       if (isCalibScreen()) { this._held = false; return; }
