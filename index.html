@@ -979,8 +979,8 @@ const Input = {
     // Smooth ramp — with a real sensor remove this and set rawPressure directly.
     // ⚡ HARDWARE API: this.rawPressure = sensor.getNormalized();  return;
     const mob  = window.innerWidth < 700;
-    const UP   = mob ? 0.10 : 0.18;   // slower ramp-up on mobile → less sensitive
-    const DOWN = mob ? 0.14 : 0.22;
+    const UP   = mob ? 0.08 : 0.18;   // slower ramp-up on mobile → less sensitive
+    const DOWN = mob ? 0.11 : 0.22;
     this._ramp      = this._held
       ? Math.min(1, this._ramp + UP)
       : Math.max(0, this._ramp - DOWN);
@@ -1285,10 +1285,11 @@ const Game = {
 
   reset() {
     const startX = leftyMode ? this.W * 0.72 : this.W * 0.28;
-    this.vyScale = 0.70;
+    const isMob = this.W < 700;
+    this.vyScale = isMob ? 0.55 : 0.70;
     // Scale horizontal speed so the game feels the same on any screen width.
-    // On a 1200px desktop: spdScale = 1. On a 375px phone: spdScale ≈ 0.31.
-    this.spdScale = this.W / 1200;
+    // On a 1200px desktop: spdScale = 1. On a 375px phone: spdScale ≈ 0.26.
+    this.spdScale = isMob ? this.W / 1440 : this.W / 1200;
     // Apply difficulty preset
     this.diff = DIFFICULTY[selectedDifficulty];
 
@@ -1510,9 +1511,6 @@ const Game = {
       if (o.type === 'top'    || o.type === 'middle') { ctx.fillRect(ox,0,o.width,topE); ctx.strokeRect(ox+.5,.5,o.width-1,topE); }
       if (o.type === 'bottom' || o.type === 'middle') { ctx.fillRect(ox,botE,o.width,H-botE); ctx.strokeRect(ox+.5,botE+.5,o.width-1,H-botE); }
 
-      ctx.strokeStyle = CFG.C.GAP_DASH; ctx.lineWidth = 1; ctx.setLineDash([3, 8]);
-      ctx.beginPath(); ctx.moveTo(sx, topE); ctx.lineTo(sx, botE); ctx.stroke();
-      ctx.setLineDash([]);
 
       const dir = leftyMode ? 1 : -1, gW = 80;
       const grd = ctx.createLinearGradient(sx + dir * gW, 0, sx, 0);
