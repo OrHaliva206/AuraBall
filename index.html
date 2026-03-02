@@ -979,8 +979,8 @@ const Input = {
     // Smooth ramp — with a real sensor remove this and set rawPressure directly.
     // ⚡ HARDWARE API: this.rawPressure = sensor.getNormalized();  return;
     const mob  = window.innerWidth < 700;
-    const UP   = mob ? 0.14 : 0.24;   // faster ramp to match higher speeds
-    const DOWN = mob ? 0.18 : 0.28;
+    const UP   = mob ? 0.10 : 0.18;   // slower ramp-up on mobile → less sensitive
+    const DOWN = mob ? 0.14 : 0.22;
     this._ramp      = this._held
       ? Math.min(1, this._ramp + UP)
       : Math.max(0, this._ramp - DOWN);
@@ -1285,7 +1285,7 @@ const Game = {
 
   reset() {
     const startX = leftyMode ? this.W * 0.72 : this.W * 0.28;
-    this.vyScale = 0.88;
+    this.vyScale = 0.70;
     // Scale horizontal speed so the game feels the same on any screen width.
     // On a 1200px desktop: spdScale = 1. On a 375px phone: spdScale ≈ 0.31.
     this.spdScale = this.W / 1200;
@@ -1412,7 +1412,7 @@ const Game = {
     if (leftyMode) { ctx.translate(W, 0); ctx.scale(-1, 1); }
 
     this._drawSky(ctx, W, H);
-    this._drawGrid(ctx, W, H);
+    this._drawCosmic(ctx, W, H);
     this._drawObstacles(ctx, W, H);
     this._drawTrail(ctx);
     this._drawBall(ctx);
@@ -1444,11 +1444,59 @@ const Game = {
     ctx.fillRect(0, 0, W, H);
   },
 
-  _drawGrid(ctx, W, H) {
-    ctx.strokeStyle = CFG.C.GRID; ctx.lineWidth = 1;
-    const SZ = 56, offX = this.scrollX % SZ;
-    for (let x = -offX; x < W + SZ; x += SZ) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
-    for (let y = 0; y < H + SZ; y += SZ)     { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+  // Seed cosmic dust particles once
+  _cosmicDust: null,
+  _initCosmic(W, H) {
+    const count = Math.floor((W * H) / 6000);
+    this._cosmicDust = [];
+    for (let i = 0; i < count; i++) {
+      this._cosmicDust.push({
+        x: Math.random() * W * 3,
+        y: Math.random() * H,
+        r: 0.4 + Math.random() * 1.4,
+        speed: 0.15 + Math.random() * 0.45,
+        alpha: 0.08 + Math.random() * 0.25,
+        hue: Math.random() < 0.6 ? 187 : (Math.random() < 0.5 ? 270 : 0),
+      });
+    }
+  },
+
+  _drawCosmic(ctx, W, H) {
+    if (!this._cosmicDust) this._initCosmic(W, H);
+
+    // Drifting dust particles (parallax with scroll)
+    for (const p of this._cosmicDust) {
+      const px = ((p.x - this.scrollX * p.speed) % (W * 1.5) + W * 1.5) % (W * 1.5) - W * 0.25;
+      if (px < -5 || px > W + 5) continue;
+      ctx.globalAlpha = p.alpha;
+      ctx.fillStyle = p.hue === 187 ? 'rgba(34,211,238,1)'
+                    : p.hue === 270 ? 'rgba(168,85,247,1)'
+                    : 'rgba(248,113,113,1)';
+      ctx.beginPath();
+      ctx.arc(px, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // Aurora waves — soft horizontal sine ribbons
+    const t = performance.now() / 1000;
+    for (let w = 0; w < 3; w++) {
+      const baseY = H * (0.25 + w * 0.25);
+      const hue = w === 0 ? 'rgba(34,211,238,' : w === 1 ? 'rgba(139,92,246,' : 'rgba(248,113,113,';
+      ctx.beginPath();
+      ctx.moveTo(0, baseY);
+      for (let x = 0; x <= W; x += 8) {
+        const wave = Math.sin((x + this.scrollX * 0.3) * 0.008 + t * (0.4 + w * 0.15) + w * 2) * (25 + w * 10)
+                   + Math.sin((x + this.scrollX * 0.15) * 0.015 + t * 0.25 + w) * 12;
+        ctx.lineTo(x, baseY + wave);
+      }
+      ctx.strokeStyle = hue + '0.045)';
+      ctx.lineWidth = 30 + w * 15;
+      ctx.stroke();
+      ctx.strokeStyle = hue + '0.09)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
   },
 
   _drawObstacles(ctx, W, H) {
