@@ -66,21 +66,33 @@
     }
 
     /* ─── Screen Manager ─── */
+    /*
+     * Scrolling architecture:
+     *   .screen        = fixed overlay, clips overflow, no scrolling
+     *   .screen-inner  = flex: 1 child that fills height and SCROLLS
+     * This is required for iOS Safari where position:fixed flex containers
+     * cannot be scrolled by touch.
+     */
     .screen {
       position: fixed;
       inset: 0;
       display: flex;
-      align-items: center;
-      justify-content: center;
+      flex-direction: column;
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.35s ease;
       z-index: 10;
-      overflow-y: auto;
+      overflow: hidden;
     }
     .screen.active {
       opacity: 1;
       pointer-events: all;
+    }
+
+    /* Game screens have no .screen-inner — use block so canvas fills naturally */
+    #game-screen, #ss-game-screen {
+      display: block;
+      overflow: hidden;
     }
 
     /* Nebula background — global layers behind all screens */
@@ -111,13 +123,25 @@
     }
 
     /* ─── Scrollable screen content ─── */
+    /*
+     * flex:1 + min-height:0 makes it fill the .screen height.
+     * overflow-y:auto + -webkit-overflow-scrolling:touch enables
+     * touch-scroll on iOS Safari (position:fixed parents can't scroll).
+     * flex-direction:column + align-items:center horizontally centers
+     * children while letting them stack vertically.
+     */
     .screen-inner {
-      min-height: min-content;
+      flex: 1;
+      min-height: 0;
       width: 100%;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 20px;
+      box-sizing: border-box;
     }
 
     /* ─── Input Fields ─── */
@@ -528,9 +552,8 @@
        MOBILE — phones up to 700px
        ═══════════════════════════════════════════════════ */
     @media (max-width: 700px) {
-      /* Screens scroll from top; iOS needs explicit scroll hint */
-      .screen { align-items: flex-start; -webkit-overflow-scrolling: touch; }
-      .screen-inner { align-items: flex-start; padding: 10px 8px; }
+      /* Screens: content starts at top so it's scrollable, not cut-off center */
+      .screen-inner { justify-content: flex-start; padding: 10px 8px; }
 
       /* ── Login ── */
       #login-screen .login-wrap { grid-template-columns: 1fr; width: 96vw; gap: 12px; }
@@ -541,7 +564,7 @@
       #mode-select-screen .mode-select-wrap { padding: 18px 10px; gap: 16px; }
       .mode-select-header h2 { font-size: 17px; }
       .mode-cards { gap: 10px; }
-      .mode-card { width: 44vw; padding: 16px 10px; gap: 10px; }
+      .mode-card { flex: 1; min-width: 0; padding: 16px 10px; gap: 10px; }
       .mode-card-icon { width: 54px; height: 54px; }
       .mode-orb { width: 28px; height: 28px; }
       .mode-card-title { font-size: 12px; }
@@ -590,7 +613,7 @@
       /* Mode select: stack cards vertically in a row layout */
       #mode-select-screen .mode-select-wrap { padding: 14px 8px; gap: 14px; }
       .mode-cards { flex-direction: column; align-items: center; gap: 8px; }
-      .mode-card { width: 92vw; flex-direction: row; padding: 14px 16px; gap: 14px; text-align: left; align-items: center; }
+      .mode-card { width: 100%; flex-direction: row; padding: 14px 16px; gap: 14px; text-align: left; align-items: center; }
       .mode-card-icon { width: 46px; height: 46px; flex-shrink: 0; }
       .mode-orb { width: 24px; height: 24px; }
       .mode-card-desc { font-size: 9px; }
