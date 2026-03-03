@@ -569,6 +569,156 @@
       /* Hide speed/tier from HUD on very small screens to prevent overflow */
       .hud-hide-sm { display: none; }
     }
+
+    /* ═══════════════════════════════════════════════════
+       MODE SELECT SCREEN
+       ═══════════════════════════════════════════════════ */
+    #mode-select-screen .mode-select-wrap {
+      display: flex; flex-direction: column; align-items: center; gap: 32px;
+      padding: 48px 20px;
+    }
+    .mode-select-header { text-align: center; display: flex; flex-direction: column; gap: 8px; }
+    .mode-select-header .greet { font-size: 10px; color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; }
+    .mode-select-header .greet span { color: var(--cyan); font-weight: 600; }
+    .mode-select-header h2 { font-size: 24px; font-weight: 300; letter-spacing: -0.01em; }
+
+    .mode-cards { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+    .mode-card {
+      display: flex; flex-direction: column; align-items: center; gap: 16px;
+      padding: 32px 28px; width: 230px;
+      background: var(--bg-800); border: 1px solid var(--border);
+      cursor: pointer; color: var(--text); font-family: inherit;
+      transition: border-color 0.25s, transform 0.2s, box-shadow 0.25s;
+      text-align: center; -webkit-tap-highlight-color: transparent;
+    }
+    .mode-card:hover { border-color: var(--cyan); transform: translateY(-4px); box-shadow: 0 8px 32px rgba(34,211,238,0.18); }
+    .mode-card:active { transform: translateY(-1px); }
+
+    .mode-card-icon {
+      width: 72px; height: 72px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%; background: var(--bg-900); border: 1px solid var(--border);
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    .mode-card:hover .mode-card-icon { border-color: var(--cyan); box-shadow: 0 0 20px rgba(34,211,238,0.22); }
+    .mode-card-title { font-size: 15px; font-weight: 500; letter-spacing: 0.03em; }
+    .mode-card-desc  { font-size: 11px; color: var(--text-dim); line-height: 1.65; }
+
+    .mode-orb {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: radial-gradient(circle at 38% 38%, #b2f5ff, rgba(34,211,238,0.1));
+      box-shadow: 0 0 18px rgba(34,211,238,0.38);
+      animation: orb-pulse 2.5s ease-in-out infinite;
+    }
+    @keyframes orb-pulse {
+      0%, 100% { box-shadow: 0 0 14px rgba(34,211,238,0.32); }
+      50%       { box-shadow: 0 0 28px rgba(34,211,238,0.55); }
+    }
+
+    /* ═══════════════════════════════════════════════════
+       SS START SCREEN
+       ═══════════════════════════════════════════════════ */
+    #ss-start-screen .ss-panel {
+      display: flex; flex-direction: column; align-items: center; gap: 24px;
+      padding: 40px 48px; border: 1px solid var(--border);
+      background: var(--bg-800); min-width: 320px;
+    }
+    .ss-game-title {
+      font-size: 2rem; font-weight: 800; letter-spacing: .08em;
+      background: linear-gradient(135deg, #22d3ee, #a855f7);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      text-align: center;
+    }
+    .ss-game-subtitle { font-size: .88rem; color: var(--text-dim); text-align: center; max-width: 270px; line-height: 1.55; }
+    .ss-best-display  { font-size: .88rem; color: var(--text-dim); display: flex; align-items: center; gap: 6px; }
+    .ss-best-display span { color: var(--cyan); font-weight: 700; font-size: 1.05rem; }
+    .ss-play-btn {
+      padding: 14px 44px; border: none;
+      background: linear-gradient(135deg, #22d3ee, #a855f7);
+      color: #0f172a; font-size: 1rem; font-weight: 700;
+      cursor: pointer; letter-spacing: .05em;
+      font-family: inherit; transition: transform .15s, box-shadow .15s;
+      box-shadow: 0 4px 20px rgba(34,211,238,0.28);
+    }
+    .ss-play-btn:hover  { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(34,211,238,0.42); }
+    .ss-play-btn:active { transform: translateY(0); }
+    .ss-controls-hint { font-size: .75rem; color: var(--text-dim); text-align: center; line-height: 1.7; }
+    .ss-back-btn {
+      background: transparent; border: none; color: var(--text-dim);
+      font-size: .78rem; cursor: pointer; font-family: inherit;
+      letter-spacing: .06em; text-transform: uppercase; padding: 4px;
+      transition: color .2s;
+    }
+    .ss-back-btn:hover { color: var(--cyan); }
+
+    /* SS game screen */
+    #ss-game-screen { padding: 0; z-index: 5; overflow: hidden; }
+    #ss-game-canvas  { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; -webkit-user-select: none; user-select: none; }
+
+    /* SS HUD */
+    #ss-hud {
+      position: fixed; top: 0; left: 0; right: 0; padding: 12px 20px;
+      display: none; justify-content: space-between; align-items: flex-start;
+      z-index: 20; pointer-events: none;
+    }
+    #ss-hud.visible { display: flex; }
+    .ss-hud-col { display: flex; flex-direction: column; gap: 2px; }
+    .ss-hud-col.right { align-items: flex-end; }
+    .ss-hud-lbl  { font-size: .62rem; text-transform: uppercase; letter-spacing: .12em; color: var(--text-dim); }
+    .ss-hud-val  { font-size: 1.35rem; font-weight: 300; color: var(--cyan); font-variant-numeric: tabular-nums; }
+    .ss-hud-tier { font-size: .68rem; color: #a855f7; }
+
+    /* SS touch areas */
+    #ss-touch-up, #ss-touch-down { display: none; position: fixed; left: 0; right: 0; z-index: 30; pointer-events: none; }
+    #ss-touch-up   { top: 0; height: 50%; }
+    #ss-touch-down { bottom: 0; height: 50%; }
+    #ss-touch-up.show, #ss-touch-down.show { display: block; pointer-events: all; }
+
+    /* SS Reboot */
+    #ss-reboot-overlay {
+      position: fixed; inset: 0; background: rgba(15,23,42,.92);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+      z-index: 50; opacity: 0; pointer-events: none;
+      transition: opacity .4s; backdrop-filter: blur(8px);
+    }
+    #ss-reboot-overlay.active { opacity: 1; pointer-events: all; }
+    .ss-reboot-title { font-size: 1.5rem; font-weight: 700; color: var(--red); letter-spacing: .14em; text-transform: uppercase; }
+    .ss-reboot-score { font-size: 2.6rem; font-weight: 300; color: var(--text); font-variant-numeric: tabular-nums; }
+    .ss-reboot-lbl   { font-size: .72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: .1em; }
+    .ss-reboot-best  { font-size: .95rem; color: var(--cyan); }
+    .ss-new-best-badge {
+      background: linear-gradient(135deg, #22d3ee, #a855f7);
+      color: #0f172a; font-size: .75rem; font-weight: 700;
+      padding: 4px 14px; text-transform: uppercase; letter-spacing: .08em; display: none;
+    }
+    .ss-new-best-badge.show { display: block; }
+    .ss-reboot-btns { display: flex; gap: 12px; margin-top: 6px; }
+    .ss-replay-btn {
+      padding: 12px 34px; border: none;
+      background: linear-gradient(135deg, #22d3ee, #a855f7);
+      color: #0f172a; font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: transform .15s; font-family: inherit;
+    }
+    .ss-replay-btn:hover { transform: scale(1.04); }
+    .ss-home-btn {
+      width: 46px; height: 46px; border-radius: 50%;
+      border: 1px solid rgba(34,211,238,.3); background: rgba(34,211,238,.1);
+      color: var(--cyan); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s;
+    }
+    .ss-home-btn:hover { background: rgba(34,211,238,.2); }
+
+    @media (max-width: 700px) {
+      .mode-cards { gap: 12px; }
+      .mode-card  { width: 46vw; padding: 22px 14px; }
+      .mode-card-title { font-size: 13px; }
+      .mode-card-desc  { font-size: 10px; }
+      #ss-start-screen .ss-panel { padding: 28px 20px; min-width: unset; width: 94vw; }
+      .ss-game-title { font-size: 1.6rem; }
+      #ss-hud { padding: 8px 12px; }
+      .ss-hud-val { font-size: 1.1rem; }
+    }
   </style>
 </head>
 <body>
@@ -625,6 +775,57 @@
         </div>
       </div>
 
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SCREEN 0.5 — MODE SELECT
+     ═══════════════════════════════════════════════════ -->
+<div id="mode-select-screen" class="screen">
+  <div class="screen-inner">
+    <div class="mode-select-wrap">
+
+      <div class="mode-select-header">
+        <p class="greet">Welcome, <span id="mode-welcome-name">—</span></p>
+        <h2>Choose Game Mode</h2>
+      </div>
+
+      <div class="mode-cards">
+
+        <!-- AuraBall -->
+        <button class="mode-card" onclick="showScreen('calibration')">
+          <div class="mode-card-icon">
+            <div class="mode-orb"></div>
+          </div>
+          <div class="mode-card-title">AuraBall</div>
+          <div class="mode-card-desc">Hold to thrust through gates — sensory rehabilitation</div>
+        </button>
+
+        <!-- SpaceShip -->
+        <button class="mode-card" onclick="ssGoToStart()">
+          <div class="mode-card-icon">
+            <svg width="46" height="46" viewBox="-23 -20 46 40" fill="none">
+              <defs>
+                <linearGradient id="sg" x1="-20" y1="0" x2="23" y2="0" gradientUnits="userSpaceOnUse">
+                  <stop offset="0" stop-color="#1e3a5f"/>
+                  <stop offset="0.55" stop-color="#2563eb"/>
+                  <stop offset="1" stop-color="#22d3ee"/>
+                </linearGradient>
+              </defs>
+              <polygon points="23,0 -8,-12 -20,-4 -15,0 -20,4 -8,12" fill="url(#sg)"/>
+              <polygon points="-4,-12 -20,-20 -21,-4" fill="#1e40af"/>
+              <polygon points="-4,12 -20,20 -21,4" fill="#1e40af"/>
+              <ellipse cx="7" cy="0" rx="6" ry="3.5" fill="#22d3ee" opacity="0.45"/>
+            </svg>
+          </div>
+          <div class="mode-card-title">SpaceShip Runner</div>
+          <div class="mode-card-desc">Dodge &amp; destroy asteroids and enemy ships</div>
+        </button>
+
+      </div>
+
+      <button class="btn btn-ghost" style="font-size:9px; padding:8px 20px;" onclick="logout()">Sign Out</button>
     </div>
   </div>
 </div>
@@ -786,6 +987,76 @@
     <button class="btn reboot-replay-btn" id="reboot-replay-btn">Replay</button>
     <button class="btn reboot-home-btn" id="reboot-home-btn">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-9 9 9"/><path d="M5 10v10a1 1 0 001 1h3v-6h6v6h3a1 1 0 001-1V10"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SS START SCREEN
+     ═══════════════════════════════════════════════════ -->
+<div id="ss-start-screen" class="screen">
+  <div class="screen-inner">
+    <div class="ss-panel">
+      <div class="ss-game-title">SPACESHIP</div>
+      <div class="ss-game-subtitle">Dodge or destroy asteroids &amp; enemy ships. Shooting earns bonus points. Survive as long as you can.</div>
+      <div class="ss-best-display">Best Score: <span id="ss-best-display">0</span></div>
+      <div class="difficulty-selector">
+        <span class="diff-label">Difficulty</span>
+        <div class="diff-btns" id="ss-diff-btns">
+          <button class="diff-btn" data-diff="easy"   onclick="ss_pickDifficulty('easy')">Easy</button>
+          <button class="diff-btn active" data-diff="medium" onclick="ss_pickDifficulty('medium')">Medium</button>
+          <button class="diff-btn" data-diff="hard"   onclick="ss_pickDifficulty('hard')">Hard</button>
+        </div>
+      </div>
+      <button class="ss-play-btn" onclick="ss_startGame()">LAUNCH</button>
+      <div class="ss-controls-hint" id="ss-controls-hint">
+        W / ↑ Move Up &nbsp;·&nbsp; S / ↓ Move Down<br>
+        Ship auto-fires — dodge or destroy for bonus points!
+      </div>
+      <button class="ss-back-btn" onclick="showScreen('mode-select')">← Mode Select</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     SS GAME SCREEN
+     ═══════════════════════════════════════════════════ -->
+<div id="ss-game-screen" class="screen">
+  <canvas id="ss-game-canvas"></canvas>
+</div>
+
+<!-- SS HUD -->
+<div id="ss-hud">
+  <div class="ss-hud-col">
+    <div class="ss-hud-lbl">Score</div>
+    <div class="ss-hud-val" id="ss-hud-score">0</div>
+  </div>
+  <div class="ss-hud-col right">
+    <div class="ss-hud-lbl">Best</div>
+    <div class="ss-hud-val" id="ss-hud-best">0</div>
+    <div class="ss-hud-tier" id="ss-hud-tier">Tier 1</div>
+  </div>
+</div>
+
+<!-- SS Touch areas (mobile) -->
+<div id="ss-touch-up"></div>
+<div id="ss-touch-down"></div>
+
+<!-- SS Reboot Overlay -->
+<div id="ss-reboot-overlay">
+  <canvas id="ss-reboot-canvas" width="130" height="90"></canvas>
+  <div class="ss-reboot-title">DESTROYED</div>
+  <div class="ss-reboot-lbl">Score</div>
+  <div class="ss-reboot-score" id="ss-reboot-score">0</div>
+  <div class="ss-reboot-best">Best: <span id="ss-reboot-best">0</span></div>
+  <div class="ss-new-best-badge" id="ss-new-best-badge">New Best!</div>
+  <div class="ss-reboot-btns">
+    <button class="ss-replay-btn" id="ss-replay-btn">Replay</button>
+    <button class="ss-home-btn"   id="ss-home-btn" title="Mode Select">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+        <polyline points="9,22 9,12 15,12 15,22"/>
+      </svg>
     </button>
   </div>
 </div>
@@ -1074,13 +1345,22 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = document.getElementById(id + '-screen');
   if (el) el.classList.add('active');
+
+  // AuraBall HUD + touch button
   document.getElementById('hud').classList.toggle('visible', id === 'game');
-  // Show touch button only during game (not calibration — global touch handler covers it)
   const tb = document.getElementById('touch-btn');
   if (isTouchDevice()) tb.classList.toggle('show', id === 'game');
-  // Restart calibration loops when entering calibration screen
+
+  // SpaceShip HUD + touch areas
+  document.getElementById('ss-hud').classList.toggle('visible', id === 'ss-game');
+  const stu = document.getElementById('ss-touch-up'), std = document.getElementById('ss-touch-down');
+  if (isTouchDevice() && id === 'ss-game') { stu.classList.add('show'); std.classList.add('show'); }
+  else { stu.classList.remove('show'); std.classList.remove('show'); }
+
+  // Stop SS game when navigating away
+  if (id !== 'ss-game' && typeof SSGame !== 'undefined') SSGame.stop();
+
   if (id === 'calibration') { startCalibLoop(); startTestCanvas(); }
-  // Refresh scoreboard whenever login screen shown
   if (id === 'login') renderScoreboard();
 }
 
@@ -1118,7 +1398,8 @@ function doRegister() {
 function afterLogin() {
   renderScoreboard();
   updateStartBestScore();
-  showScreen('calibration');
+  document.getElementById('mode-welcome-name').textContent = Auth.getDisplayName();
+  showScreen('mode-select');
 }
 
 function handleGoogleSignIn(response) {
@@ -1670,7 +1951,7 @@ const Game = {
         home.removeEventListener('click', onHome);
       };
       const onReplay = () => { cleanup(); startGame(); };
-      const onHome   = () => { cleanup(); showScreen('calibration'); };
+      const onHome   = () => { cleanup(); showScreen('mode-select'); };
       replay.addEventListener('click', onReplay);
       home.addEventListener('click', onHome);
     }, 340);
@@ -1715,13 +1996,489 @@ const Game = {
    ─────────────────────────────────────────────────────────────────── */
 function pickDifficulty(level) {
   selectedDifficulty = level;
-  document.querySelectorAll('.diff-btn').forEach(b =>
+  document.querySelectorAll('#calibration-screen .diff-btn').forEach(b =>
     b.classList.toggle('active', b.dataset.diff === level));
 }
 
 function startGame() {
   showScreen('game');
   Game.start();
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SPACESHIP RUNNER — Embedded engine (all symbols prefixed SS_/ss_)
+   ═══════════════════════════════════════════════════════════════════ */
+
+const SS_DIFFICULTY = {
+  easy:   { SCROLL_SPEED: 3.8, SPAWN_RATE: 105, SHIP_SPEED: 5.5, BULLET_INTERVAL: 24, DIFF_EVERY: 35, SPEED_MULT: 1.08 },
+  medium: { SCROLL_SPEED: 5.8, SPAWN_RATE: 72,  SHIP_SPEED: 7.0, BULLET_INTERVAL: 17, DIFF_EVERY: 22, SPEED_MULT: 1.12 },
+  hard:   { SCROLL_SPEED: 8.2, SPAWN_RATE: 50,  SHIP_SPEED: 9.0, BULLET_INTERVAL: 12, DIFF_EVERY: 15, SPEED_MULT: 1.16 },
+};
+const SS_SCORES = { asteroid_small: 10, asteroid_medium: 20, asteroid_large: 45, enemy_fighter: 30, enemy_bomber: 55 };
+
+let ss_selectedDifficulty = 'medium';
+let SS_bestScore = parseInt(localStorage.getItem('spaceship_best') || '0', 10);
+
+function ss_pickDifficulty(d) {
+  ss_selectedDifficulty = d;
+  document.querySelectorAll('#ss-diff-btns .diff-btn').forEach(b => b.classList.toggle('active', b.dataset.diff === d));
+}
+
+function ssGoToStart() {
+  document.getElementById('ss-best-display').textContent = SS_bestScore;
+  document.getElementById('ss-hud-best').textContent = SS_bestScore;
+  if (isTouchDevice()) document.getElementById('ss-controls-hint').textContent = 'Drag up/down to steer — ship auto-fires!';
+  showScreen('ss-start');
+}
+
+/* ── Utilities (shared-safe: not defined in AuraBall) ── */
+function ss_lerp(a, b, t)  { return a + (b - a) * t; }
+function ss_clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
+function ss_rand(lo, hi)    { return lo + Math.random() * (hi - lo); }
+function ss_randInt(lo, hi) { return Math.floor(ss_rand(lo, hi + 1)); }
+
+/* ── SSInput ── */
+const SSInput = {
+  up: false, down: false, touchY: null,
+
+  init() {
+    window.addEventListener('keydown', e => {
+      if (e.code === 'ArrowUp'   || e.code === 'KeyW') { e.preventDefault(); this.up   = true; }
+      if (e.code === 'ArrowDown' || e.code === 'KeyS') { e.preventDefault(); this.down = true; }
+    });
+    window.addEventListener('keyup', e => {
+      if (e.code === 'ArrowUp'   || e.code === 'KeyW') this.up   = false;
+      if (e.code === 'ArrowDown' || e.code === 'KeyS') this.down = false;
+    });
+    document.addEventListener('touchstart', this._onStart.bind(this), { passive: false });
+    document.addEventListener('touchmove',  this._onMove.bind(this),  { passive: false });
+    document.addEventListener('touchend',   this._onEnd.bind(this),   { passive: false });
+  },
+
+  _isSSGame()  { return document.getElementById('ss-game-screen').classList.contains('active'); },
+  _rebootOn()  { return document.getElementById('ss-reboot-overlay').classList.contains('active'); },
+  _isTappable(e){ return e.target.closest('button, input, label, a, select, .btn'); },
+
+  _onStart(e) {
+    if (!this._isSSGame() || this._rebootOn()) return;
+    if (this._isTappable(e)) return;
+    e.preventDefault(); this.touchY = e.touches[0].clientY;
+  },
+  _onMove(e) {
+    if (!this._isSSGame() || this._rebootOn()) return;
+    e.preventDefault(); this.touchY = e.touches[0].clientY;
+  },
+  _onEnd(e) {
+    if (!this._isSSGame() || this._rebootOn()) return;
+    e.preventDefault(); this.touchY = null;
+  },
+};
+
+/* ── SSGame ── */
+const SSGame = {
+  canvas: null, ctx: null, W: 0, H: 0,
+  running: false, raf: null,
+  frame: 0, score: 0, tier: 0, tierTimer: 0,
+  spdScale: 1, scrollSpeed: 0,
+  spawnTimer: 0, bulletTimer: 0,
+  diff: null, ship: null,
+  bullets: [], enemies: [], particles: [], stars: [],
+  shake: 0,
+
+  init() {
+    this.canvas = document.getElementById('ss-game-canvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.resize();
+    window.addEventListener('resize', () => this.resize());
+  },
+
+  resize() {
+    const c = this.canvas;
+    this.W = c.width  = c.offsetWidth  || window.innerWidth;
+    this.H = c.height = c.offsetHeight || window.innerHeight;
+  },
+
+  reset() {
+    const isMob = this.W < 700;
+    this.spdScale    = isMob ? this.W / 1440 : this.W / 1200;
+    this.diff        = SS_DIFFICULTY[ss_selectedDifficulty];
+    this.frame       = 0; this.score = 0; this.tier = 0; this.tierTimer = 0;
+    this.scrollSpeed = this.diff.SCROLL_SPEED * this.spdScale;
+    this.spawnTimer  = 0; this.bulletTimer = 0; this.shake = 0;
+    this.bullets = []; this.enemies = []; this.particles = [];
+
+    this.stars = Array.from({ length: 130 }, () => ({
+      x: ss_rand(0, this.W), y: ss_rand(0, this.H),
+      r: ss_rand(0.4, 2.5), alpha: ss_rand(0.3, 1), layer: ss_randInt(0, 2),
+    }));
+
+    const shipH = isMob ? 30 : 38;
+    this.ship = {
+      x: isMob ? this.W * 0.13 : this.W * 0.10,
+      y: this.H / 2, vy: 0,
+      w: shipH * 2, h: shipH,
+      spd: this.diff.SHIP_SPEED * (isMob ? 0.85 : 1),
+      invincible: 0, trail: [],
+    };
+
+    document.getElementById('ss-hud-tier').textContent = 'Tier 1';
+    this._updateHUD();
+  },
+
+  start() { this.resize(); this.reset(); this.running = true; this._loop(); },
+
+  stop() {
+    this.running = false;
+    if (this.raf) { cancelAnimationFrame(this.raf); this.raf = null; }
+  },
+
+  _loop() {
+    if (!this.running) return;
+    this.raf = requestAnimationFrame(() => this._loop());
+    this._update(); this._draw();
+  },
+
+  _update() {
+    const d = this.diff;
+    this.frame++;
+
+    this.tierTimer++;
+    if (this.tierTimer >= d.DIFF_EVERY * 60) {
+      this.tier++; this.tierTimer = 0;
+      this.scrollSpeed = d.SCROLL_SPEED * Math.pow(d.SPEED_MULT, this.tier) * this.spdScale;
+      document.getElementById('ss-hud-tier').textContent = 'Tier ' + (this.tier + 1);
+    }
+
+    if (this.frame % 60 === 0) { this.score++; this._updateHUD(); }
+
+    this._updateShip(d);
+
+    this.bullets = this.bullets.filter(b => b.alive && b.x < this.W + 30);
+    this.bullets.forEach(b => { b.x += b.vx; });
+
+    this.spawnTimer++;
+    const rate = Math.max(28, d.SPAWN_RATE - this.tier * 4);
+    if (this.spawnTimer >= rate) { this.spawnTimer = 0; this._spawnEnemy(); }
+
+    this._updateEnemies();
+
+    this.particles = this.particles.filter(p => p.life > 0);
+    this.particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.vy += 0.04; p.life -= p.decay; p.alpha = p.life;
+    });
+
+    this.stars.forEach(s => {
+      s.x -= ([0.25, 0.6, 1.2])[s.layer] * this.scrollSpeed * 0.22;
+      if (s.x < -3) { s.x = this.W + 3; s.y = ss_rand(0, this.H); }
+    });
+
+    if (this.shake > 0.3) this.shake *= 0.82; else this.shake = 0;
+  },
+
+  _updateShip(d) {
+    const s = this.ship, isMob = this.W < 700;
+    if (isMob && SSInput.touchY !== null) {
+      s.y = ss_lerp(s.y, SSInput.touchY, 0.16);
+    } else {
+      if (SSInput.up)   s.vy -= 0.75;
+      if (SSInput.down) s.vy += 0.75;
+      if (!SSInput.up && !SSInput.down) s.vy *= 0.78;
+      s.vy = ss_clamp(s.vy, -s.spd, s.spd);
+      s.y += s.vy;
+    }
+    s.y = ss_clamp(s.y, s.h * 0.5 + 4, this.H - s.h * 0.5 - 4);
+    s.trail.push({ x: s.x, y: s.y });
+    if (s.trail.length > 14) s.trail.shift();
+    if (s.invincible > 0) s.invincible--;
+
+    this.bulletTimer++;
+    if (this.bulletTimer >= d.BULLET_INTERVAL) {
+      this.bulletTimer = 0;
+      const spd = (10 + d.SCROLL_SPEED) * this.spdScale * 1.9;
+      this.bullets.push({ x: s.x + s.w * 0.5, y: s.y, vx: spd, w: 20, h: 3, alive: true });
+    }
+  },
+
+  _spawnEnemy() {
+    const type = this._pickType(), cfg = this._cfg(type), r = cfg.r;
+    const vy = type.startsWith('asteroid') ? ss_rand(-0.4, 0.4) * this.scrollSpeed * 0.3 : 0;
+    this.enemies.push({
+      type, x: this.W + r + 10, y: ss_rand(r + 8, this.H - r - 8),
+      vx: -(this.scrollSpeed * cfg.speedFactor), vy,
+      r, hp: cfg.hp, maxHp: cfg.hp, alive: true,
+      rot: ss_rand(0, Math.PI * 2), rotSpd: ss_rand(-0.025, 0.025),
+      points: SS_SCORES[type],
+      verts:   type.startsWith('asteroid') ? this._genVerts(r) : null,
+      craters: type.startsWith('asteroid') ? this._genCraters(r) : null,
+      wobble: ss_rand(0, Math.PI * 2),
+      wobbleAmp: type === 'enemy_bomber' ? ss_rand(1.5, 2.5) : 0,
+      wobbleFreq: ss_rand(0.04, 0.07),
+    });
+  },
+
+  _pickType() {
+    const t = this.tier, r = Math.random();
+    if (t === 0) return r < .55 ? 'asteroid_small' : r < .85 ? 'asteroid_medium' : 'asteroid_large';
+    if (t === 1) return r < .3  ? 'asteroid_small' : r < .55 ? 'asteroid_medium' : r < .7 ? 'asteroid_large' : r < .87 ? 'enemy_fighter' : 'enemy_bomber';
+    return r < .2 ? 'asteroid_small' : r < .38 ? 'asteroid_medium' : r < .52 ? 'asteroid_large' : r < .74 ? 'enemy_fighter' : 'enemy_bomber';
+  },
+
+  _cfg(type) {
+    switch (type) {
+      case 'asteroid_small':  return { r: ss_rand(11, 19), hp: 1, speedFactor: ss_rand(.9, 1.25) };
+      case 'asteroid_medium': return { r: ss_rand(24, 37), hp: 2, speedFactor: ss_rand(.7, 1.0) };
+      case 'asteroid_large':  return { r: ss_rand(44, 60), hp: 3, speedFactor: ss_rand(.5, .75) };
+      case 'enemy_fighter':   return { r: ss_rand(15, 21), hp: 1, speedFactor: ss_rand(1.1, 1.45) };
+      case 'enemy_bomber':    return { r: ss_rand(25, 33), hp: 2, speedFactor: ss_rand(.7, .92) };
+      default:                return { r: 20, hp: 1, speedFactor: 1 };
+    }
+  },
+
+  _genVerts(r) {
+    const n = ss_randInt(7, 11);
+    return Array.from({ length: n }, (_, i) => ({ a: (i / n) * Math.PI * 2, d: r * ss_rand(0.62, 0.98) }));
+  },
+
+  _genCraters(r) {
+    return Array.from({ length: ss_randInt(2, 4) }, () => ({
+      cx: ss_rand(-r*.38, r*.38), cy: ss_rand(-r*.38, r*.38), cr: ss_rand(r*.09, r*.18),
+    }));
+  },
+
+  _updateEnemies() {
+    const s = this.ship;
+    this.enemies = this.enemies.filter(e => e.alive && e.x > -e.r * 3);
+    for (const e of this.enemies) {
+      if (e.type === 'enemy_bomber') { const dy = s.y - e.y; e.vy += dy * 0.004; e.vy = ss_clamp(e.vy, -3, 3); }
+      e.x += e.vx;
+      e.y  = ss_clamp(e.y + e.vy, e.r + 4, this.H - e.r - 4);
+      e.rot += e.rotSpd; e.wobble += e.wobbleFreq;
+
+      for (const b of this.bullets) {
+        if (!b.alive) continue;
+        const dx = b.x - e.x, dy = b.y - e.y;
+        if (dx * dx + dy * dy < (e.r + 5) * (e.r + 5)) {
+          b.alive = false; e.hp--;
+          this._spawnSpark(b.x, b.y);
+          if (e.hp <= 0) {
+            e.alive = false;
+            this._spawnExplosion(e.x, e.y, e.r, e.type);
+            this.score += e.points; this._updateHUD();
+          }
+        }
+      }
+
+      if (s.invincible === 0) {
+        const dx = s.x - e.x, dy = s.y - e.y;
+        const hr = s.h * 0.38 + e.r;
+        if (dx * dx + dy * dy < hr * hr) { this._die(); return; }
+      }
+    }
+  },
+
+  _spawnSpark(x, y) {
+    for (let i = 0; i < 5; i++) {
+      const a = ss_rand(0, Math.PI * 2), spd = ss_rand(1.2, 4);
+      this.particles.push({ x, y, vx: Math.cos(a)*spd, vy: Math.sin(a)*spd, r: ss_rand(1.5, 3), color: '#22d3ee', life: 1, alpha: 1, decay: ss_rand(.08,.16) });
+    }
+  },
+
+  _spawnExplosion(x, y, r, type) {
+    const n = Math.floor(r * 0.55) + 9;
+    const cols = type.startsWith('asteroid') ? ['#fb923c','#fbbf24','#f97316','#d97706'] : ['#f87171','#ef4444','#fb923c','#fcd34d'];
+    for (let i = 0; i < n; i++) {
+      const a = ss_rand(0, Math.PI * 2), spd = ss_rand(.8, r * 0.17);
+      this.particles.push({ x: x + ss_rand(-r*.25, r*.25), y: y + ss_rand(-r*.25, r*.25), vx: Math.cos(a)*spd, vy: Math.sin(a)*spd, r: ss_rand(2, r*.14), color: cols[ss_randInt(0, cols.length-1)], life: 1, alpha: 1, decay: ss_rand(.02,.055) });
+    }
+    this.shake = Math.min(r * 0.34, 15);
+  },
+
+  _die() {
+    this.running = false;
+    this._spawnExplosion(this.ship.x, this.ship.y, 42, 'player');
+    this.shake = 20;
+    setTimeout(() => ss_showReboot(this.score), 650);
+  },
+
+  _updateHUD() {
+    document.getElementById('ss-hud-score').textContent = this.score;
+    document.getElementById('ss-hud-best').textContent  = SS_bestScore;
+  },
+
+  _draw() {
+    const { ctx, W, H } = this;
+    ctx.save();
+    if (this.shake > 0.5) ctx.translate(ss_rand(-this.shake, this.shake), ss_rand(-this.shake, this.shake));
+    this._drawSky(ctx, W, H);
+    this._drawStars(ctx);
+    for (const p of this.particles) {
+      ctx.globalAlpha = Math.max(0, p.alpha * p.life);
+      ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    for (const e of this.enemies) this._drawEnemy(ctx, e);
+    this._drawShipTrail(ctx);
+    this._drawBullets(ctx);
+    if (this.running) this._drawShip(ctx, this.ship);
+    ctx.restore();
+  },
+
+  _drawSky(ctx, W, H) {
+    const t = Math.min(this.tier / 5, 1);
+    const stages = [[15,23,42],[25,18,55],[50,12,58],[65,10,32]];
+    const si = Math.min(Math.floor(t*(stages.length-1)), stages.length-2);
+    const sf = t*(stages.length-1) - si;
+    const c1 = stages[si], c2 = stages[si+1];
+    const g = ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0, `rgb(${Math.round(ss_lerp(c1[0],c2[0],sf))},${Math.round(ss_lerp(c1[1],c2[1],sf))},${Math.round(ss_lerp(c1[2],c2[2],sf))})`);
+    g.addColorStop(1, `rgb(${Math.round(ss_lerp(c1[0],c2[0],sf))-4},${Math.round(ss_lerp(c1[1],c2[1],sf))-3},${Math.round(ss_lerp(c1[2],c2[2],sf))+8})`);
+    ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+  },
+
+  _drawStars(ctx) {
+    const cols = ['#475569','#94a3b8','#e2e8f0'];
+    for (const s of this.stars) {
+      ctx.globalAlpha = s.alpha * 0.9; ctx.fillStyle = cols[s.layer];
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  },
+
+  _drawShipTrail(ctx) {
+    const trail = this.ship.trail;
+    for (let i = 0; i < trail.length; i++) {
+      const f = i / trail.length;
+      ctx.globalAlpha = f * 0.45; ctx.fillStyle = '#22d3ee';
+      ctx.beginPath(); ctx.arc(trail[i].x - this.ship.w * 0.42, trail[i].y, ss_lerp(1,4,f), 0, Math.PI*2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  },
+
+  _drawShip(ctx, s) {
+    ctx.save(); ctx.translate(s.x, s.y);
+    const hw = s.w*0.5, hh = s.h*0.5;
+    const eg = ctx.createRadialGradient(-hw*.82,0,0,-hw*.82,0,hh*1.3);
+    eg.addColorStop(0,'rgba(34,211,238,.65)'); eg.addColorStop(0.5,'rgba(139,92,246,.3)'); eg.addColorStop(1,'transparent');
+    ctx.fillStyle = eg; ctx.beginPath(); ctx.arc(-hw*.82,0,hh*1.3,0,Math.PI*2); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(hw,0); ctx.lineTo(-hw*.28,-hh); ctx.lineTo(-hw,-hh*.34); ctx.lineTo(-hw*.74,0); ctx.lineTo(-hw,hh*.34); ctx.lineTo(-hw*.28,hh); ctx.closePath();
+    const bg = ctx.createLinearGradient(-hw,0,hw,0);
+    bg.addColorStop(0,'#1e3a5f'); bg.addColorStop(0.5,'#2563eb'); bg.addColorStop(1,'#22d3ee');
+    ctx.fillStyle = bg; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-hw*.14,-hh); ctx.lineTo(-hw*.78,-hh*1.62); ctx.lineTo(-hw,-hh*.34); ctx.closePath(); ctx.fillStyle='#1e40af'; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-hw*.14,hh); ctx.lineTo(-hw*.78,hh*1.62); ctx.lineTo(-hw,hh*.34); ctx.closePath(); ctx.fillStyle='#1e40af'; ctx.fill();
+    ctx.beginPath(); ctx.ellipse(hw*.12,0,hh*.42,hh*.28,0,0,Math.PI*2);
+    ctx.fillStyle='rgba(34,211,238,.42)'; ctx.fill(); ctx.strokeStyle='rgba(34,211,238,.8)'; ctx.lineWidth=1; ctx.stroke();
+    ctx.shadowColor='#22d3ee'; ctx.shadowBlur=10;
+    ctx.strokeStyle='rgba(34,211,238,.55)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(hw,0); ctx.lineTo(-hw*.28,-hh); ctx.lineTo(-hw,-hh*.34); ctx.lineTo(-hw*.74,0); ctx.lineTo(-hw,hh*.34); ctx.lineTo(-hw*.28,hh); ctx.closePath(); ctx.stroke();
+    ctx.shadowBlur=0; ctx.restore();
+  },
+
+  _drawBullets(ctx) {
+    for (const b of this.bullets) {
+      if (!b.alive) continue;
+      ctx.save(); ctx.shadowColor='#22d3ee'; ctx.shadowBlur=7;
+      const g = ctx.createLinearGradient(b.x-b.w,b.y,b.x,b.y);
+      g.addColorStop(0,'transparent'); g.addColorStop(0.35,'rgba(34,211,238,.55)'); g.addColorStop(1,'#22d3ee');
+      ctx.fillStyle=g; ctx.fillRect(b.x-b.w, b.y-b.h*.5, b.w, b.h);
+      ctx.shadowBlur=0; ctx.restore();
+    }
+  },
+
+  _drawEnemy(ctx, e) {
+    ctx.save(); ctx.translate(e.x, e.y + Math.sin(e.wobble)*e.wobbleAmp);
+    if (e.type.startsWith('asteroid')) this._drawAsteroid(ctx, e); else this._drawEnemyShip(ctx, e);
+    if (e.maxHp > 1 && e.hp < e.maxHp) {
+      const bw = e.r*2, pct = e.hp/e.maxHp;
+      ctx.fillStyle='rgba(0,0,0,.5)'; ctx.fillRect(-bw/2,-e.r-11,bw,5);
+      ctx.fillStyle=pct>.5?'#4ade80':'#f87171'; ctx.fillRect(-bw/2,-e.r-11,bw*pct,5);
+    }
+    ctx.restore();
+  },
+
+  _drawAsteroid(ctx, e) {
+    ctx.rotate(e.rot);
+    ctx.beginPath();
+    for (let i = 0; i < e.verts.length; i++) {
+      const v = e.verts[i], x = Math.cos(v.a)*v.d, y = Math.sin(v.a)*v.d;
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+    ctx.closePath();
+    const g = ctx.createRadialGradient(-e.r*.22,-e.r*.22,0,0,0,e.r);
+    g.addColorStop(0,'#8a7155'); g.addColorStop(0.6,'#5c4f38'); g.addColorStop(1,'#3d3228');
+    ctx.fillStyle=g; ctx.fill();
+    ctx.strokeStyle='rgba(200,170,110,.45)'; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.globalAlpha=0.28; ctx.strokeStyle='#d4b896'; ctx.lineWidth=0.8;
+    for (const cr of e.craters) { ctx.beginPath(); ctx.arc(cr.cx,cr.cy,cr.cr,0,Math.PI*2); ctx.stroke(); }
+    ctx.globalAlpha=1;
+  },
+
+  _drawEnemyShip(ctx, e) {
+    const r = e.r, isBomber = e.type==='enemy_bomber';
+    ctx.scale(-1,1); ctx.shadowColor=isBomber?'#f87171':'#fb923c'; ctx.shadowBlur=12;
+    ctx.beginPath();
+    ctx.moveTo(r*.9,0); ctx.lineTo(-r*.24,-r*.64); ctx.lineTo(-r*.85,-r*.3); ctx.lineTo(-r*.65,0); ctx.lineTo(-r*.85,r*.3); ctx.lineTo(-r*.24,r*.64); ctx.closePath();
+    const g = ctx.createLinearGradient(-r,0,r,0);
+    g.addColorStop(0,isBomber?'#7f1d1d':'#7c2d12'); g.addColorStop(0.5,isBomber?'#dc2626':'#ea580c'); g.addColorStop(1,isBomber?'#f87171':'#fb923c');
+    ctx.fillStyle=g; ctx.fill(); ctx.shadowBlur=0;
+    if (isBomber) {
+      ctx.fillStyle='#991b1b';
+      ctx.beginPath(); ctx.moveTo(-r*.1,-r*.64); ctx.lineTo(-r*.7,-r*1.12); ctx.lineTo(-r*.85,-r*.3); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(-r*.1,r*.64); ctx.lineTo(-r*.7,r*1.12); ctx.lineTo(-r*.85,r*.3); ctx.closePath(); ctx.fill();
+    }
+    ctx.beginPath(); ctx.ellipse(r*.14,0,r*.3,r*.19,0,0,Math.PI*2);
+    ctx.fillStyle=isBomber?'rgba(248,113,113,.38)':'rgba(251,146,60,.38)'; ctx.fill();
+    ctx.strokeStyle=isBomber?'rgba(248,113,113,.8)':'rgba(251,146,60,.8)'; ctx.lineWidth=1; ctx.stroke();
+  },
+};
+
+/* ── SS Reboot ── */
+function ss_showReboot(score) {
+  const isNew = score > SS_bestScore;
+  if (isNew) { SS_bestScore = score; localStorage.setItem('spaceship_best', SS_bestScore); }
+  document.getElementById('ss-reboot-score').textContent = score;
+  document.getElementById('ss-reboot-best').textContent  = SS_bestScore;
+  document.getElementById('ss-best-display').textContent = SS_bestScore;
+  document.getElementById('ss-new-best-badge').classList.toggle('show', isNew);
+  const overlay = document.getElementById('ss-reboot-overlay');
+  overlay.classList.add('active');
+  ss_startRebootAnim();
+
+  const replayBtn = document.getElementById('ss-replay-btn'), homeBtn = document.getElementById('ss-home-btn');
+  const cleanup = () => { ss_stopRebootAnim(); replayBtn.removeEventListener('click', onReplay); homeBtn.removeEventListener('click', onHome); };
+  const onReplay = () => { cleanup(); overlay.classList.remove('active'); ss_startGame(); };
+  const onHome   = () => { cleanup(); overlay.classList.remove('active'); showScreen('mode-select'); };
+  replayBtn.addEventListener('click', onReplay);
+  homeBtn.addEventListener('click', onHome);
+}
+
+let _ssRebootRaf = null;
+function ss_startRebootAnim() {
+  ss_stopRebootAnim();
+  const canvas = document.getElementById('ss-reboot-canvas'), ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height; let t = 0;
+  function tick() {
+    _ssRebootRaf = requestAnimationFrame(tick);
+    ctx.clearRect(0,0,W,H); t += 0.04;
+    const x = W/2, y = H*0.42 + Math.sin(t)*H*0.28;
+    ctx.globalAlpha=0.3; ctx.fillStyle='#22d3ee'; ctx.beginPath(); ctx.arc(x-16,y,4,0,Math.PI*2); ctx.fill();
+    ctx.globalAlpha=0.15; ctx.beginPath(); ctx.arc(x-28,y,2.5,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1;
+    ctx.save(); ctx.translate(x,y);
+    ctx.beginPath(); ctx.moveTo(22,0); ctx.lineTo(-7,-11); ctx.lineTo(-18,-4); ctx.lineTo(-13,0); ctx.lineTo(-18,4); ctx.lineTo(-7,11); ctx.closePath();
+    ctx.fillStyle='#2563eb'; ctx.fill(); ctx.strokeStyle='#22d3ee'; ctx.lineWidth=1.2; ctx.stroke();
+    ctx.restore();
+  }
+  tick();
+}
+function ss_stopRebootAnim() {
+  if (_ssRebootRaf) { cancelAnimationFrame(_ssRebootRaf); _ssRebootRaf = null; }
+}
+
+function ss_startGame() {
+  showScreen('ss-game');
+  SSGame.stop();
+  SSGame.start();
 }
 
 /* ─────────────────────────────────────────────────────────────────────
@@ -1733,6 +2490,8 @@ function startGame() {
   Auth.load();
   Input.init();
   Game.init();
+  SSInput.init();
+  SSGame.init();
   buildGauge();
   renderScoreboard();
 
