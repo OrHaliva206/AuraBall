@@ -524,58 +524,96 @@
     /* ═══════════════════════════════════════════════════
        MOBILE RESPONSIVE — stacks layout on small screens
        ═══════════════════════════════════════════════════ */
+    /* ═══════════════════════════════════════════════════
+       MOBILE — phones up to 700px
+       ═══════════════════════════════════════════════════ */
     @media (max-width: 700px) {
-      /* On mobile, let screens scroll from top instead of centering (prevents clipping) */
-      .screen { align-items: flex-start; }
-      .screen-inner { align-items: flex-start; padding: 16px 8px; }
+      /* Screens scroll from top; iOS needs explicit scroll hint */
+      .screen { align-items: flex-start; -webkit-overflow-scrolling: touch; }
+      .screen-inner { align-items: flex-start; padding: 10px 8px; }
 
-      /* Login: single column */
-      #login-screen .login-wrap {
-        grid-template-columns: 1fr;
-        width: 95vw;
-        gap: 16px;
-      }
-      .login-panel, .scoreboard-panel { padding: 20px 16px; }
-      .logo-text h1 { font-size: 22px; }
+      /* ── Login ── */
+      #login-screen .login-wrap { grid-template-columns: 1fr; width: 96vw; gap: 12px; }
+      .login-panel, .scoreboard-panel { padding: 16px 14px; }
+      .logo-text h1 { font-size: 20px; }
 
-      /* Calibration: stack gauge above panel */
-      #calibration-screen .layout {
-        grid-template-columns: 1fr;
-        padding: 12px;
-        gap: 16px;
-      }
-      /* Keep gauge vertical on mobile — JS sets style.height so keep that axis */
-      .gauge-wrap { flex-direction: row; align-items: center; gap: 12px; }
-      .gauge-track { height: 100px; width: 24px; }
+      /* ── Mode Select ── */
+      #mode-select-screen .mode-select-wrap { padding: 18px 10px; gap: 16px; }
+      .mode-select-header h2 { font-size: 17px; }
+      .mode-cards { gap: 10px; }
+      .mode-card { width: 44vw; padding: 16px 10px; gap: 10px; }
+      .mode-card-icon { width: 54px; height: 54px; }
+      .mode-orb { width: 28px; height: 28px; }
+      .mode-card-title { font-size: 12px; }
+      .mode-card-desc  { font-size: 9.5px; line-height: 1.45; }
+
+      /* ── Calibration ── */
+      #calibration-screen .layout { grid-template-columns: 1fr; padding: 10px; gap: 12px; }
+      .gauge-wrap { flex-direction: row; align-items: center; gap: 10px; }
+      .gauge-track { height: 80px; width: 20px; }
       .gauge-labels { display: none; }
       .gauge-marks  { display: none; }
-      .calib-header h2 { font-size: 20px; }
-      .pressure-readout .val { font-size: 28px; min-width: 56px; }
-      #test-canvas { height: 100px; }
-      .info-box p { font-size: 11px; line-height: 1.6; }
+      .calib-header h2 { font-size: 17px; }
+      .calib-panel { gap: 12px; }
+      .pressure-readout { padding: 8px 12px; }
+      .pressure-readout .val { font-size: 24px; min-width: 48px; }
+      #test-canvas { height: 80px; }
+      .info-box { padding: 10px 12px; }
+      .info-box p { font-size: 10.5px; line-height: 1.5; }
 
-      /* Start screen */
-      #start-screen .panel { padding: 28px 20px; min-width: unset; width: 94vw; gap: 20px; }
+      /* ── AuraBall Start ── */
+      #start-screen .panel { padding: 22px 16px; min-width: unset; width: 95vw; gap: 16px; }
 
-      /* HUD smaller on mobile */
-      #hud { gap: 12px; padding: 7px 14px; top: 10px; }
-      .hud-val { font-size: 14px; }
+      /* ── SS Start ── */
+      #ss-start-screen .ss-panel { padding: 22px 16px; min-width: unset; width: 95vw; gap: 16px; }
+      .ss-game-title { font-size: 1.45rem; }
+      .ss-game-subtitle { font-size: .8rem; }
 
-      /* Touch button always visible on mobile during game */
+      /* ── AuraBall HUD ── */
+      #hud { gap: 10px; padding: 6px 12px; top: 6px; }
+      .hud-val { font-size: 13px; }
       #touch-btn.show { display: flex; }
+
+      /* ── SS HUD ── */
+      #ss-hud { padding: 6px 12px; }
+      .ss-hud-val { font-size: 1rem; }
     }
 
+    /* ═══════════════════════════════════════════════════
+       SMALL PHONES — 480px and below
+       ═══════════════════════════════════════════════════ */
     @media (max-width: 480px) {
-      /* Hide speed/tier from HUD on very small screens to prevent overflow */
       .hud-hide-sm { display: none; }
+
+      .screen-inner { padding: 8px 6px; }
+
+      /* Mode select: stack cards vertically in a row layout */
+      #mode-select-screen .mode-select-wrap { padding: 14px 8px; gap: 14px; }
+      .mode-cards { flex-direction: column; align-items: center; gap: 8px; }
+      .mode-card { width: 92vw; flex-direction: row; padding: 14px 16px; gap: 14px; text-align: left; align-items: center; }
+      .mode-card-icon { width: 46px; height: 46px; flex-shrink: 0; }
+      .mode-orb { width: 24px; height: 24px; }
+      .mode-card-desc { font-size: 9px; }
+
+      /* Compact calibration */
+      .gauge-track { height: 68px; width: 18px; }
+      #test-canvas { height: 68px; }
+      .pressure-readout .val { font-size: 20px; }
+      .calib-header h2 { font-size: 15px; }
+
+      /* Compact panels */
+      #start-screen .panel { padding: 18px 14px; gap: 14px; }
+      #ss-start-screen .ss-panel { padding: 18px 14px; gap: 14px; }
+      .ss-game-title { font-size: 1.25rem; }
+      .ss-play-btn { padding: 12px 32px; font-size: .9rem; }
     }
 
     /* ═══════════════════════════════════════════════════
        MODE SELECT SCREEN
        ═══════════════════════════════════════════════════ */
     #mode-select-screen .mode-select-wrap {
-      display: flex; flex-direction: column; align-items: center; gap: 32px;
-      padding: 48px 20px;
+      display: flex; flex-direction: column; align-items: center; gap: 28px;
+      padding: 36px 20px;
     }
     .mode-select-header { text-align: center; display: flex; flex-direction: column; gap: 8px; }
     .mode-select-header .greet { font-size: 10px; color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; }
@@ -619,9 +657,9 @@
        SS START SCREEN
        ═══════════════════════════════════════════════════ */
     #ss-start-screen .ss-panel {
-      display: flex; flex-direction: column; align-items: center; gap: 24px;
-      padding: 40px 48px; border: 1px solid var(--border);
-      background: var(--bg-800); min-width: 320px;
+      display: flex; flex-direction: column; align-items: center; gap: 20px;
+      padding: 36px 40px; border: 1px solid var(--border);
+      background: var(--bg-800); min-width: 300px;
     }
     .ss-game-title {
       font-size: 2rem; font-weight: 800; letter-spacing: .08em;
@@ -709,16 +747,6 @@
     }
     .ss-home-btn:hover { background: rgba(34,211,238,.2); }
 
-    @media (max-width: 700px) {
-      .mode-cards { gap: 12px; }
-      .mode-card  { width: 46vw; padding: 22px 14px; }
-      .mode-card-title { font-size: 13px; }
-      .mode-card-desc  { font-size: 10px; }
-      #ss-start-screen .ss-panel { padding: 28px 20px; min-width: unset; width: 94vw; }
-      .ss-game-title { font-size: 1.6rem; }
-      #ss-hud { padding: 8px 12px; }
-      .ss-hud-val { font-size: 1.1rem; }
-    }
   </style>
 </head>
 <body>
