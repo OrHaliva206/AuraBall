@@ -89,9 +89,10 @@
       pointer-events: all;
     }
 
-    /* Game screens have no .screen-inner — use block so canvas fills naturally */
+    /* Game screens: flex-centered so viewport-sized canvas sits at (0,0) */
     #game-screen, #ss-game-screen {
-      display: block;
+      align-items: center;
+      justify-content: center;
       overflow: hidden;
     }
 
@@ -464,12 +465,7 @@
        GAME SCREEN
        ═══════════════════════════════════════════════════ */
     #game-screen { padding: 0; z-index: 5; overflow: hidden; }
-    #game-canvas  {
-      display: block;
-      position: absolute; top: 0; left: 0;
-      width: 100%; height: 100%;
-      touch-action: none;
-    }
+    #game-canvas  { display: block; touch-action: none; }
 
     /* Mobile hold button — shown on touch devices */
     #touch-btn {
@@ -552,84 +548,72 @@
 
     /* ═══════════════════════════════════════════════════
        MOBILE — phones up to 700px
-       Goal: every screen fits in ~580px viewport height,
-       no scrolling needed. Content starts at top and is
-       centered when it fits.
+       ─ screen-inner stays as the scroll container
+       ─ all panels shrink to fit viewport height
        ═══════════════════════════════════════════════════ */
     @media (max-width: 700px) {
-      /* ── Screen container: top-aligned, compact padding ── */
-      .screen-inner { justify-content: flex-start; padding: 8px; }
+      /* Screen-inner: content from top, scrollable if needed */
+      .screen-inner { justify-content: flex-start; padding: 10px 8px; }
 
-      /* ── Login: single column, tight layout ── */
-      #login-screen .login-wrap {
-        grid-template-columns: 1fr;
-        width: 100%;
-        gap: 8px;
-      }
-      .login-panel { padding: 14px 12px; gap: 10px; }
+      /* ── Login: single column ── */
+      #login-screen .login-wrap { grid-template-columns: 1fr; width: 98vw; gap: 8px; }
+      .login-panel { padding: 14px 12px; gap: 8px; }
       .scoreboard-panel {
-        padding: 12px;
-        gap: 8px;
-        min-height: unset;
-        /* Cap scoreboard so it never pushes login off-screen */
-        max-height: 200px;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
+        padding: 12px; gap: 6px; min-height: unset;
+        max-height: 180px; overflow-y: auto; -webkit-overflow-scrolling: touch;
       }
-      .score-row { padding: 4px 0; }
       .logo-text h1 { font-size: 18px; }
-      .logo-text p  { font-size: 8px; }
-      .logo-orb { width: 32px; height: 32px; }
-      .login-fields { gap: 7px; }
-      .input-field { padding: 9px 12px; font-size: 12px; }
-      .login-btn-row .btn { padding: 10px 8px; }
+      .logo-orb { width: 30px; height: 30px; }
+      .login-fields { gap: 6px; }
+      .input-field { padding: 9px 11px; font-size: 12px; }
+      .login-btn-row .btn { padding: 10px 6px; font-size: 10px; }
       .google-divider { margin: 2px 0; }
-      .scoreboard-title { font-size: 8px; padding-bottom: 6px; }
+      .scoreboard-title { font-size: 8px; padding-bottom: 5px; }
+      .score-row { padding: 3px 0; }
 
-      /* ── Mode Select: compact cards ── */
-      #mode-select-screen .mode-select-wrap { padding: 14px 10px; gap: 14px; }
+      /* ── Mode Select ──
+         Cards use calc(50% - gap/2) so they have explicit pixel widths
+         derived from the parent's defined width (mode-select-wrap: 100%) */
+      #mode-select-screen .mode-select-wrap { padding: 16px 10px; gap: 14px; }
       .mode-select-header { gap: 4px; }
-      .mode-select-header h2 { font-size: 16px; }
+      .mode-select-header h2 { font-size: 17px; }
       .mode-select-header .greet { font-size: 9px; }
       .mode-cards { gap: 8px; }
-      .mode-card { flex: 1; min-width: 0; padding: 14px 8px; gap: 8px; }
-      .mode-card-icon { width: 50px; height: 50px; }
+      /* calc(50% - 4px): each card is half the mode-cards width minus half-gap */
+      .mode-card { width: calc(50% - 4px); padding: 16px 10px; gap: 10px; }
+      .mode-card-icon { width: 52px; height: 52px; }
       .mode-orb { width: 26px; height: 26px; }
-      .mode-card-title { font-size: 11px; }
+      .mode-card-title { font-size: 12px; }
       .mode-card-desc  { font-size: 9px; line-height: 1.4; }
 
-      /* ── Calibration: row gauge, compact panel ── */
+      /* ── Calibration ── */
       #calibration-screen .layout { grid-template-columns: 1fr; padding: 8px; gap: 10px; }
       .gauge-wrap { flex-direction: row; align-items: center; gap: 8px; }
-      .gauge-track { height: 72px; width: 18px; }
+      .gauge-track { height: 76px; width: 18px; }
       .gauge-labels { display: none; }
       .gauge-marks  { display: none; }
-      .calib-header h2 { font-size: 15px; }
+      .calib-header h2 { font-size: 16px; }
       .calib-header p  { font-size: 10px; margin-top: 2px; }
       .calib-panel { gap: 8px; }
       .pressure-readout { padding: 6px 10px; }
       .pressure-readout .val { font-size: 22px; min-width: 44px; }
-      .pressure-readout .unit { font-size: 9px; }
-      #test-canvas { height: 72px; }
+      #test-canvas { height: 76px; }
       .info-box { padding: 8px 10px; }
       .info-box p { font-size: 10px; line-height: 1.45; }
       .diff-btn { padding: 8px 0; font-size: 9px; }
-      .calib-panel > .btn { padding: 10px 24px; font-size: 10px; }
 
       /* ── AuraBall Start ── */
-      #start-screen .panel { padding: 18px 14px; min-width: unset; width: 95vw; gap: 14px; }
+      #start-screen .panel { padding: 20px 16px; min-width: unset; width: 95vw; gap: 14px; }
       .toggle-row { padding: 10px 12px; }
 
       /* ── SS Start ── */
-      #ss-start-screen .ss-panel { padding: 18px 14px; min-width: unset; width: 95vw; gap: 14px; }
-      .ss-game-title { font-size: 1.4rem; }
-      .ss-game-subtitle { font-size: .78rem; }
+      #ss-start-screen .ss-panel { padding: 20px 16px; min-width: unset; width: 95vw; gap: 14px; }
+      .ss-game-title { font-size: 1.45rem; }
+      .ss-game-subtitle { font-size: .8rem; }
 
-      /* ── AuraBall HUD ── */
+      /* ── HUDs ── */
       #hud { gap: 10px; padding: 6px 12px; top: 6px; }
       .hud-val { font-size: 13px; }
-
-      /* ── SS HUD ── */
       #ss-hud { padding: 6px 12px; }
       .ss-hud-val { font-size: 1rem; }
     }
@@ -640,16 +624,11 @@
     @media (max-width: 480px) {
       .hud-hide-sm { display: none; }
 
-      /* Mode select: stack cards vertically */
-      .mode-cards { flex-direction: column; align-items: stretch; gap: 6px; }
-      .mode-card { flex-direction: row; padding: 12px 14px; gap: 12px; text-align: left; align-items: center; }
+      /* Mode select: stack cards vertically as wide rows */
+      .mode-cards { flex-direction: column; gap: 6px; }
+      .mode-card { width: 100%; flex-direction: row; padding: 12px 14px; gap: 12px; text-align: left; align-items: center; }
       .mode-card-icon { width: 44px; height: 44px; flex-shrink: 0; }
       .mode-orb { width: 22px; height: 22px; }
-
-      /* Calibration: more compact */
-      .gauge-track { height: 60px; width: 16px; }
-      #test-canvas { height: 60px; }
-      .calib-header h2 { font-size: 14px; }
 
       /* Compact panels */
       #start-screen .panel { padding: 16px 12px; gap: 12px; }
@@ -663,13 +642,16 @@
     #mode-select-screen .mode-select-wrap {
       display: flex; flex-direction: column; align-items: center; gap: 28px;
       padding: 36px 20px;
+      /* Explicit width so child flex items have a reference to fill */
+      width: min(520px, 100%);
     }
     .mode-select-header { text-align: center; display: flex; flex-direction: column; gap: 8px; }
     .mode-select-header .greet { font-size: 10px; color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; }
     .mode-select-header .greet span { color: var(--cyan); font-weight: 600; }
     .mode-select-header h2 { font-size: 24px; font-weight: 300; letter-spacing: -0.01em; }
 
-    .mode-cards { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+    /* width:100% so cards can use flex:1 or % widths */
+    .mode-cards { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; width: 100%; }
     .mode-card {
       display: flex; flex-direction: column; align-items: center; gap: 16px;
       padding: 32px 28px; width: 230px;
