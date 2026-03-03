@@ -9,6 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="AuraBall" />
   <title>AuraBall — Sensory Rehabilitation System</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     /* ═══════════════════════════════════════════════════
        GLOBAL RESET & CSS VARIABLES — Med-Tech Minimalist
@@ -231,6 +232,19 @@
       gap: 10px;
     }
     .login-btn-row .btn { flex: 1; padding: 12px 10px; font-size: 10px; }
+
+    .google-divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 4px 0;
+    }
+    .google-divider::before, .google-divider::after {
+      content: ''; flex: 1; height: 1px;
+      background: var(--border);
+    }
+    .google-divider span {
+      font-size: 9px; color: var(--text-dim); text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
 
     /* Scoreboard panel */
     .scoreboard-panel {
@@ -594,9 +608,12 @@
           <button class="btn btn-ghost" onclick="doRegister()">Register</button>
         </div>
 
+        <div class="google-divider"><span>or</span></div>
+
+        <div id="google-signin-btn" style="display:flex; justify-content:center;"></div>
+
         <p style="font-size:9px; color:var(--text-dim); text-align:center; line-height:1.7;">
-          Data stored locally on this device only.<br>
-          ⚡ For multi-device leaderboards, connect a backend API.
+          Data stored locally on this device.
         </p>
       </div>
 
@@ -875,7 +892,44 @@ const Auth = {
     return null;
   },
 
-  logout() { this.current = null; },
+  logout() {
+    this.current = null;
+    this._googleUser = null;
+    try { localStorage.removeItem('auraball_google_user'); } catch (_) {}
+  },
+
+  loginWithGoogle(credential) {
+    // Decode JWT payload (no verification needed — Google already verified it)
+    const parts = credential.split('.');
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    const key = 'g_' + payload.sub;  // unique Google user ID
+    const displayName = payload.name || payload.email || 'Google User';
+
+    // Create user entry if new, preserve scores if returning
+    if (!this.users[key]) {
+      this.users[key] = { password: '__google__', bestScore: 0, googleName: displayName };
+    } else {
+      this.users[key].googleName = displayName;  // update name in case it changed
+    }
+    this._save();
+    this.current = key;
+    this._googleUser = { name: displayName, email: payload.email, picture: payload.picture };
+    // Remember Google user for auto sign-in
+    try { localStorage.setItem('auraball_google_user', key); } catch (_) {}
+    return null;
+  },
+
+  isGoogleUser() {
+    return this.current && this.current.startsWith('g_');
+  },
+
+  getDisplayName() {
+    if (!this.current) return '—';
+    if (this.isGoogleUser() && this.users[this.current]) {
+      return this.users[this.current].googleName || this.current;
+    }
+    return this.current;
+  },
 
   saveScore(seconds) {
     if (!this.current) return false;
@@ -895,7 +949,7 @@ const Auth = {
 
   getLeaderboard() {
     return Object.entries(this.users)
-      .map(([name, d]) => ({ name, score: d.bestScore }))
+      .map(([key, d]) => ({ name: d.googleName || key, key, score: d.bestScore }))
       .filter(e => e.score > 0)
       .sort((a, b) => b.score - a.score)
       .slice(0, 10);
@@ -914,7 +968,7 @@ function renderScoreboard() {
   }
   const rankClass = ['gold','silver','bronze'];
   el.innerHTML = board.map((entry, i) => {
-    const isMe = entry.name === Auth.current;
+    const isMe = entry.key === Auth.current;
     return `
       <div class="score-row">
         <span class="score-rank ${rankClass[i] || ''}">${i + 1}</span>
@@ -1065,6 +1119,27 @@ function afterLogin() {
   renderScoreboard();
   updateStartBestScore();
   showScreen('calibration');
+}
+
+function handleGoogleSignIn(response) {
+  Auth.loginWithGoogle(response.credential);
+  clearLoginError();
+  afterLogin();
+}
+
+function initGoogleSignIn() {
+  if (typeof google === 'undefined' || !google.accounts) return;
+  google.accounts.id.initialize({
+    client_id: '2438728136-95bkn5bp4n215veg8cubmg57ous2lm94.apps.googleusercontent.com',
+    callback: handleGoogleSignIn,
+    auto_select: true,
+  });
+  google.accounts.id.renderButton(
+    document.getElementById('google-signin-btn'),
+    { theme: 'filled_black', size: 'large', shape: 'rectangular', text: 'signin_with', width: 280 }
+  );
+  // Try auto sign-in for returning users
+  google.accounts.id.prompt();
 }
 
 function logout() {
@@ -1231,7 +1306,7 @@ function finishCalibration() {
   const src = midP > 0.05 ? 'midline' : 'peak';
   document.getElementById('calib-sensitivity-label').textContent =
     'Sensitivity: ' + pct + '% (' + src + ' ' + (calibMaxPressure * 20).toFixed(1) + ' PSI)';
-  document.getElementById('welcome-name').textContent = Auth.current || '—';
+  document.getElementById('welcome-name').textContent = Auth.getDisplayName();
   updateStartBestScore();
   showScreen('start');
 }
@@ -1660,6 +1735,13 @@ function startGame() {
   Game.init();
   buildGauge();
   renderScoreboard();
+
+  // Initialize Google Sign-In (script loads async, may not be ready yet)
+  if (typeof google !== 'undefined' && google.accounts) {
+    initGoogleSignIn();
+  } else {
+    window.addEventListener('load', () => setTimeout(initGoogleSignIn, 300));
+  }
 
   // Wire Enter key on login inputs
   ['login-name', 'login-pass'].forEach(id => {
