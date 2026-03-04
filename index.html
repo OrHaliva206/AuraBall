@@ -32,11 +32,13 @@
     html, body {
       width: 100%; height: 100%;
       overflow: hidden;
+      overscroll-behavior: none;
       background: var(--bg-900);
       color: var(--text);
       font-family: 'Inter', system-ui, sans-serif;
       -webkit-tap-highlight-color: transparent;
     }
+    html { position: fixed; inset: 0; }
 
     /* Prevent default touch/select only on game interaction elements */
     #game-canvas, #touch-btn {
@@ -83,6 +85,9 @@
       transition: opacity 0.35s ease;
       z-index: 10;
       overflow: hidden;
+      max-width: 100vw;
+      max-height: 100vh;
+      max-height: 100dvh;
     }
     .screen.active {
       opacity: 1;
@@ -135,8 +140,11 @@
       flex: 1;
       min-height: 0;
       width: 100%;
+      max-width: 100vw;
+      overflow-x: hidden;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+      overscroll-behavior-x: none;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -144,6 +152,7 @@
       padding: 20px;
       box-sizing: border-box;
     }
+    .screen-inner > * { max-width: 100%; box-sizing: border-box; }
 
     /* ─── Input Fields ─── */
     .input-field {
@@ -219,6 +228,7 @@
       gap: 32px;
       align-items: start;
       width: min(720px, 95vw);
+      max-width: 100%;
     }
 
     .login-panel {
@@ -324,6 +334,7 @@
       gap: 48px;
       align-items: start;
       width: min(860px, 95vw);
+      max-width: 100%;
       padding: 48px;
     }
 
@@ -340,7 +351,7 @@
     }
     .gauge-outer { position: relative; display: flex; align-items: stretch; }
     .gauge-track {
-      width: 28px; height: 380px;
+      width: 28px; height: min(380px, 50vh);
       background: var(--bg-800);
       border: 1px solid var(--border);
       border-radius: 2px;
@@ -393,7 +404,7 @@
     }
     .pressure-readout .val {
       font-size: 38px; font-weight: 300; color: var(--cyan);
-      font-variant-numeric: tabular-nums; line-height: 1; min-width: 72px;
+      font-variant-numeric: tabular-nums; line-height: 1; min-width: min(72px, 100%);
     }
     .pressure-readout .unit { font-size: 11px; color: var(--text-dim); }
 
@@ -409,7 +420,7 @@
     #start-screen .panel {
       display: flex; flex-direction: column; align-items: center; gap: 28px;
       padding: 48px 64px; border: 1px solid var(--border); background: var(--bg-800);
-      min-width: 320px;
+      min-width: min(320px, 100%); max-width: 100%;
     }
 
     .welcome-label {
@@ -465,7 +476,7 @@
        GAME SCREEN
        ═══════════════════════════════════════════════════ */
     #game-screen { padding: 0; z-index: 5; overflow: hidden; }
-    #game-canvas  { display: block; touch-action: none; }
+    #game-canvas  { display: block; touch-action: none; position: absolute; inset: 0; width: 100%; height: 100%; }
 
     /* Mobile hold button — shown on touch devices */
     #touch-btn {
@@ -517,7 +528,7 @@
       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
       opacity: 0; pointer-events: none;
       transition: opacity 0.25s;
-      overflow: hidden;
+      overflow: hidden; padding: 16px; box-sizing: border-box;
     }
     #reboot-overlay.active { opacity: 1; pointer-events: all; }
 
@@ -531,7 +542,7 @@
     }
     .reboot-new-best.show { opacity: 1; }
     .reboot-btns { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 8px; }
-    .reboot-replay-btn { min-width: 160px; }
+    .reboot-replay-btn { min-width: min(160px, 100%); }
     .reboot-home-btn {
       width: 44px; height: 44px; min-width: unset; padding: 0;
       display: flex; align-items: center; justify-content: center;
@@ -558,10 +569,10 @@
     .mode-select-header .greet span { color: var(--cyan); font-weight: 600; }
     .mode-select-header h2 { font-size: 24px; font-weight: 300; letter-spacing: -0.01em; }
 
-    .mode-cards { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; width: 100%; }
+    .mode-cards { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 100%; }
     .mode-card {
       display: flex; flex-direction: column; align-items: center; gap: 16px;
-      padding: 32px 28px; width: 230px;
+      padding: 32px 28px; width: min(230px, 100%);
       background: var(--bg-800); border: 1px solid var(--border);
       cursor: pointer; color: var(--text); font-family: inherit;
       transition: border-color 0.25s, transform 0.2s, box-shadow 0.25s;
@@ -595,7 +606,7 @@
     #ss-start-screen .ss-panel {
       display: flex; flex-direction: column; align-items: center; gap: 20px;
       padding: 36px 40px; border: 1px solid var(--border);
-      background: var(--bg-800); min-width: 300px;
+      background: var(--bg-800); min-width: min(300px, 100%); max-width: 100%;
     }
     .ss-game-title {
       font-size: 2rem; font-weight: 800; letter-spacing: .08em;
@@ -603,7 +614,7 @@
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
       text-align: center;
     }
-    .ss-game-subtitle { font-size: .88rem; color: var(--text-dim); text-align: center; max-width: 270px; line-height: 1.55; }
+    .ss-game-subtitle { font-size: .88rem; color: var(--text-dim); text-align: center; max-width: min(270px, 100%); line-height: 1.55; }
     .ss-best-display  { font-size: .88rem; color: var(--text-dim); display: flex; align-items: center; gap: 6px; }
     .ss-best-display span { color: var(--cyan); font-weight: 700; font-size: 1.05rem; }
     .ss-play-btn {
@@ -653,6 +664,7 @@
       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
       z-index: 50; opacity: 0; pointer-events: none;
       transition: opacity .4s; backdrop-filter: blur(8px);
+      overflow: hidden; padding: 16px; box-sizing: border-box;
     }
     #ss-reboot-overlay.active { opacity: 1; pointer-events: all; }
     .ss-reboot-title { font-size: 1.5rem; font-weight: 700; color: var(--red); letter-spacing: .14em; text-transform: uppercase; }
@@ -687,88 +699,152 @@
        ─ all panels shrink to fit viewport height
        ═══════════════════════════════════════════════════ */
     @media (max-width: 700px) {
-      /* Screen-inner: content from top, scrollable if needed */
+      /* ── Global: compact from top, scrollable ── */
       .screen-inner { justify-content: flex-start; padding: 10px 8px; }
 
-      /* ── Login: single column ── */
-      #login-screen .login-wrap { grid-template-columns: 1fr; width: 98vw; gap: 8px; }
+      /* ── Login (REFERENCE — all other screens match this) ── */
+      #login-screen .login-wrap { grid-template-columns: 1fr; width: 100%; gap: 8px; }
       .login-panel { padding: 14px 12px; gap: 8px; }
       .scoreboard-panel {
-        padding: 12px; gap: 6px; min-height: unset;
-        max-height: 180px; overflow-y: auto; -webkit-overflow-scrolling: touch;
+        padding: 10px; gap: 6px; min-height: unset;
+        max-height: 160px; overflow-y: auto; -webkit-overflow-scrolling: touch;
       }
       .logo-text h1 { font-size: 18px; }
-      .logo-orb { width: 30px; height: 30px; }
+      .logo-orb { width: 28px; height: 28px; }
       .login-fields { gap: 6px; }
       .input-field { padding: 9px 11px; font-size: 12px; }
       .login-btn-row .btn { padding: 10px 6px; font-size: 10px; }
       .google-divider { margin: 2px 0; }
       .scoreboard-title { font-size: 8px; padding-bottom: 5px; }
       .score-row { padding: 3px 0; }
+      .score-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-      /* ── Mode Select ──
-         Cards use calc(50% - gap/2) so they have explicit pixel widths
-         derived from the parent's defined width (mode-select-wrap: 100%) */
-      #mode-select-screen .mode-select-wrap { padding: 16px 10px; gap: 14px; }
-      .mode-select-header { gap: 4px; }
-      .mode-select-header h2 { font-size: 17px; }
+      /* ── Mode Select — same compactness as login ── */
+      #mode-select-screen .mode-select-wrap { padding: 12px 10px; gap: 10px; width: 100%; }
+      .mode-select-header { gap: 3px; }
+      .mode-select-header h2 { font-size: 16px; }
       .mode-select-header .greet { font-size: 9px; }
-      .mode-cards { gap: 8px; }
-      /* calc(50% - 4px): each card is half the mode-cards width minus half-gap */
-      .mode-card { width: calc(50% - 4px); padding: 16px 10px; gap: 10px; }
-      .mode-card-icon { width: 52px; height: 52px; }
-      .mode-orb { width: 26px; height: 26px; }
+      .mode-cards { gap: 6px; width: 100%; flex-direction: column; }
+      .mode-card {
+        width: 100%; flex-direction: row; padding: 12px; gap: 10px;
+        text-align: left; align-items: center;
+      }
+      .mode-card-icon { width: 44px; height: 44px; flex-shrink: 0; }
+      .mode-orb { width: 22px; height: 22px; }
       .mode-card-title { font-size: 12px; }
-      .mode-card-desc  { font-size: 9px; line-height: 1.4; }
+      .mode-card-desc  { font-size: 9px; line-height: 1.35; }
+      .mode-card-desc br { display: none; }
 
-      /* ── Calibration ── */
-      #calibration-screen .layout { grid-template-columns: 1fr; padding: 8px; gap: 10px; }
+      /* ── Calibration — compact single-column like login ── */
+      #calibration-screen .layout {
+        grid-template-columns: 1fr; padding: 10px 12px;
+        gap: 8px; width: 100%;
+      }
       .gauge-wrap { flex-direction: row; align-items: center; gap: 8px; }
-      .gauge-track { height: 76px; width: 18px; }
+      .gauge-track { height: 60px; width: 16px; }
       .gauge-labels { display: none; }
       .gauge-marks  { display: none; }
-      .calib-header h2 { font-size: 16px; }
-      .calib-header p  { font-size: 10px; margin-top: 2px; }
-      .calib-panel { gap: 8px; }
+      #gauge-midline::after { display: none; }
+      .calib-header h2 { font-size: 15px; }
+      .calib-header p  { font-size: 10px; margin-top: 1px; }
+      .calib-panel { gap: 6px; }
       .pressure-readout { padding: 6px 10px; }
-      .pressure-readout .val { font-size: 22px; min-width: 44px; }
-      #test-canvas { height: 76px; }
-      .info-box { padding: 8px 10px; }
-      .info-box p { font-size: 10px; line-height: 1.45; }
-      .diff-btn { padding: 8px 0; font-size: 9px; }
+      .pressure-readout .val { font-size: 20px; min-width: 40px; }
+      .pressure-readout .unit { font-size: 10px; }
+      #test-canvas { height: 60px; }
+      .info-box { padding: 6px 10px; }
+      .info-box p { font-size: 10px; line-height: 1.35; }
+      .key-chip { font-size: 9px; padding: 1px 5px; }
+      .diff-btn { padding: 7px 0; font-size: 9px; }
+      .diff-label { margin-bottom: 4px; }
+      .test-area-header { margin-bottom: 4px; }
 
-      /* ── AuraBall Start ── */
-      #start-screen .panel { padding: 20px 16px; min-width: unset; width: 95vw; gap: 14px; }
-      .toggle-row { padding: 10px 12px; }
+      /* ── AuraBall Start — same padding/gap as login panel ── */
+      #start-screen .panel {
+        padding: 14px 12px; min-width: unset;
+        width: 100%; gap: 8px;
+      }
+      .welcome-label { font-size: 9px; }
+      .toggle-row { padding: 8px 10px; }
+      .toggle-row-label { font-size: 10px; }
+      .toggle-hint { font-size: 9px; line-height: 1.4; }
+      .start-btn-group { gap: 6px; }
+      .start-btn-group .btn { padding: 11px; font-size: 10px; }
 
-      /* ── SS Start ── */
-      #ss-start-screen .ss-panel { padding: 20px 16px; min-width: unset; width: 95vw; gap: 14px; }
-      .ss-game-title { font-size: 1.45rem; }
-      .ss-game-subtitle { font-size: .8rem; }
+      /* ── SS Start — same compactness as login panel ── */
+      #ss-start-screen .ss-panel {
+        padding: 14px 12px; min-width: unset;
+        width: 100%; gap: 8px;
+      }
+      .ss-game-title { font-size: 1.25rem; }
+      .ss-game-subtitle { font-size: .75rem; max-width: 100%; line-height: 1.4; }
+      .ss-best-display  { font-size: .78rem; }
+      .ss-best-display span { font-size: .88rem; }
+      .ss-play-btn { padding: 11px 30px; font-size: .88rem; }
+      .ss-controls-hint { font-size: .68rem; line-height: 1.5; }
+      .ss-back-btn { font-size: .7rem; }
+      .difficulty-selector { margin-top: 0; }
 
-      /* ── HUDs ── */
-      #hud { gap: 10px; padding: 6px 12px; top: 6px; }
-      .hud-val { font-size: 13px; }
-      #ss-hud { padding: 6px 12px; }
-      .ss-hud-val { font-size: 1rem; }
+      /* ── Reboot overlays — compact mobile ── */
+      #reboot-overlay { gap: 8px; padding: 16px; }
+      #reboot-ball-canvas { width: 80px; height: 80px; }
+      .reboot-title { font-size: 11px; }
+      .reboot-score { font-size: 10px; }
+      .reboot-btns { gap: 8px; margin-top: 4px; }
+      .reboot-replay-btn { min-width: unset; padding: 11px 28px; }
+      .reboot-home-btn { width: 38px; height: 38px; }
+
+      #ss-reboot-overlay { gap: 8px; padding: 16px; }
+      #ss-reboot-canvas { width: 90px; height: 60px; }
+      .ss-reboot-title { font-size: 1rem; }
+      .ss-reboot-score { font-size: 1.8rem; }
+      .ss-reboot-lbl   { font-size: .65rem; }
+      .ss-reboot-best  { font-size: .82rem; }
+      .ss-new-best-badge { font-size: .65rem; padding: 3px 10px; }
+      .ss-reboot-btns { gap: 8px; margin-top: 2px; }
+      .ss-replay-btn  { padding: 10px 26px; font-size: .88rem; }
+      .ss-home-btn    { width: 38px; height: 38px; }
+
+      /* ── HUDs — compact ── */
+      #hud { gap: 8px; padding: 5px 10px; top: 4px; max-width: calc(100vw - 12px); }
+      .hud-val { font-size: 12px; }
+      .hud-key { font-size: 6px; }
+      .hud-sep { height: 18px; }
+      .hud-bar-track { width: 44px; }
+      .hud-hide-sm { display: none; }
+
+      #ss-hud { padding: 5px 10px; }
+      .ss-hud-val { font-size: .9rem; }
+      .ss-hud-lbl { font-size: .55rem; }
     }
 
     /* ═══════════════════════════════════════════════════
-       SMALL PHONES — 480px and below
+       SMALL PHONES — 380px and below
        ═══════════════════════════════════════════════════ */
-    @media (max-width: 480px) {
-      .hud-hide-sm { display: none; }
+    @media (max-width: 380px) {
+      .screen-inner { padding: 6px 5px; }
 
-      /* Mode select: stack cards vertically as wide rows */
-      .mode-cards { flex-direction: column; gap: 6px; }
-      .mode-card { width: 100%; flex-direction: row; padding: 12px 14px; gap: 12px; text-align: left; align-items: center; }
-      .mode-card-icon { width: 44px; height: 44px; flex-shrink: 0; }
-      .mode-orb { width: 22px; height: 22px; }
+      #login-screen .login-wrap { gap: 6px; }
+      .login-panel { padding: 10px 8px; gap: 6px; }
+      .logo-text h1 { font-size: 16px; }
 
-      /* Compact panels */
-      #start-screen .panel { padding: 16px 12px; gap: 12px; }
-      #ss-start-screen .ss-panel { padding: 16px 12px; gap: 12px; }
-      .ss-game-title { font-size: 1.2rem; }
+      #mode-select-screen .mode-select-wrap { padding: 8px 6px; gap: 6px; }
+      .mode-card { padding: 10px; gap: 8px; }
+      .mode-card-icon { width: 36px; height: 36px; }
+      .mode-orb { width: 18px; height: 18px; }
+
+      #calibration-screen .layout { padding: 6px 8px; gap: 6px; }
+      .gauge-track { height: 48px; width: 14px; }
+      #test-canvas { height: 48px; }
+      .calib-header h2 { font-size: 14px; }
+      .pressure-readout .val { font-size: 18px; }
+
+      #start-screen .panel { padding: 10px 8px; gap: 6px; }
+      .start-btn-group .btn { padding: 9px; font-size: 9px; }
+
+      #ss-start-screen .ss-panel { padding: 10px 8px; gap: 6px; }
+      .ss-game-title { font-size: 1.1rem; }
+      .ss-play-btn { padding: 9px 22px; font-size: .8rem; }
     }
 
 
@@ -1686,10 +1762,9 @@ const Game = {
   },
 
   resize() {
-    this.W = window.innerWidth;
-    this.H = window.innerHeight;
-    this.canvas.width  = this.W;
-    this.canvas.height = this.H;
+    const c = this.canvas;
+    this.W = c.width  = c.offsetWidth  || window.innerWidth;
+    this.H = c.height = c.offsetHeight || window.innerHeight;
   },
 
   reset() {
