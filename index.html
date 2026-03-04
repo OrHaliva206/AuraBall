@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#0f172a" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -508,7 +508,7 @@
 
     /* HUD */
     #hud {
-      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+      position: fixed; top: max(16px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
       z-index: 20;
       display: flex; align-items: center; gap: 20px;
       padding: 8px 18px;
@@ -648,7 +648,7 @@
 
     /* SS HUD */
     #ss-hud {
-      position: fixed; top: 0; left: 0; right: 0; padding: 12px 20px;
+      position: fixed; top: 0; left: 0; right: 0; padding: max(12px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) 12px max(20px, env(safe-area-inset-left));
       display: none; justify-content: space-between; align-items: flex-start;
       z-index: 20; pointer-events: none;
     }
@@ -813,14 +813,14 @@
       .ss-home-btn    { width: 38px; height: 38px; }
 
       /* ── HUDs — compact ── */
-      #hud { gap: 8px; padding: 5px 10px; top: 4px; max-width: calc(100vw - 12px); }
+      #hud { gap: 8px; padding: 5px 10px; top: max(4px, env(safe-area-inset-top)); max-width: calc(100vw - 12px); }
       .hud-val { font-size: 12px; }
       .hud-key { font-size: 6px; }
       .hud-sep { height: 18px; }
       .hud-bar-track { width: 44px; }
       .hud-hide-sm { display: none; }
 
-      #ss-hud { padding: 5px 10px; }
+      #ss-hud { padding: max(5px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) 5px max(10px, env(safe-area-inset-left)); }
       .ss-hud-val { font-size: .9rem; }
       .ss-hud-lbl { font-size: .55rem; }
     }
@@ -854,6 +854,38 @@
       .ss-play-btn { padding: 9px 22px; font-size: .8rem; }
     }
 
+    /* ═══════════════════════════════════════════════════
+       TOUCH ACTIVE STATES — instant press feedback
+       Only on touch devices (pointer: coarse), so desktop
+       hover animations are completely unaffected.
+       ═══════════════════════════════════════════════════ */
+    @media (pointer: coarse) {
+      .btn                 { transition: color 0.22s ease, transform 0.08s ease; }
+      .btn:active          { transform: scale(0.95); }
+
+      .diff-btn            { transition: background 0.1s, color 0.1s, transform 0.08s; }
+      .diff-btn:active     { transform: scale(0.93); opacity: 0.8; }
+
+      .mode-card           { transition: border-color 0.25s, transform 0.08s, box-shadow 0.25s; }
+      .mode-card:active    { transform: scale(0.97); border-color: var(--cyan); }
+
+      .ss-play-btn         { transition: transform 0.08s, box-shadow 0.08s; }
+      .ss-play-btn:active  { transform: scale(0.95); box-shadow: 0 2px 10px rgba(34,211,238,0.2); }
+
+      .ss-replay-btn       { transition: transform 0.08s; }
+      .ss-replay-btn:active{ transform: scale(0.95); }
+
+      .ss-back-btn:active  { opacity: 0.5; }
+
+      .ss-home-btn         { transition: background 0.1s, transform 0.08s; }
+      .ss-home-btn:active  { transform: scale(0.88); background: rgba(34,211,238,0.25); }
+
+      .reboot-home-btn     { transition: background 0.1s, color 0.1s, transform 0.08s; }
+      .reboot-home-btn:active { transform: scale(0.88); }
+
+      .calib-reset-btn     { transition: color 0.2s, border-color 0.2s, transform 0.08s; }
+      .calib-reset-btn:active { transform: scale(0.93); opacity: 0.6; }
+    }
 
   </style>
 </head>
