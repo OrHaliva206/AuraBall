@@ -411,6 +411,13 @@
     .test-area-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .test-label-xs   { font-size: 9px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-dim); }
     .test-label-cyan { font-size: 9px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--cyan); }
+    .calib-reset-btn {
+      background: none; border: 1px solid var(--border); color: var(--text-dim);
+      font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 3px 10px; cursor: pointer; font-family: inherit;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .calib-reset-btn:hover { color: var(--cyan); border-color: var(--cyan); }
 
     #test-canvas { display: block; width: 100%; border: 1px solid var(--border); background: var(--bg-800); }
 
@@ -986,13 +993,15 @@
 
         <div class="calib-header">
           <h2>Sensor Calibration</h2>
-          <p>Map pressure range to the 1–20 gauge scale</p>
+          <p>Find the pressure that holds the ball steady at the midline</p>
         </div>
 
         <div class="info-box">
           <p>
-            Hold <span class="key-chip">SPACE</span> (or touch &amp; hold on mobile)
-            to simulate pressure. Push the ball up to the <b style="color:var(--red)">target line</b> — that pressure sets your game sensitivity.
+            Hold <span class="key-chip">SPACE</span> (or touch &amp; hold) and
+            <b>ease pressure</b> until the ball floats in the
+            <b style="color:var(--cyan)">TARGET ZONE</b>.
+            Hold steady for <b>1.5 sec</b> — the calibration locks automatically.
           </p>
           <p style="margin-top:8px; font-size:10px; color:rgba(100,116,139,0.7);">
             ⚡ Hardware: replace Spacebar with pressure sensor API (see source comments).
@@ -1013,7 +1022,7 @@
         <div>
           <div class="test-area-header">
             <span class="test-label-xs">Testing Area</span>
-            <span class="test-label-cyan">Hold = Rise &nbsp;·&nbsp; Release = Fall</span>
+            <button class="calib-reset-btn" onclick="resetCalib()">&#8635; Reset</button>
           </div>
           <canvas id="test-canvas" width="560" height="140"></canvas>
         </div>
@@ -1599,6 +1608,16 @@ function buildGauge() {
 
 let _testCanvasRunning = false;
 let _calibMidlinePressure = 0;   // exposed for finishCalibration()
+let _calibResetPending    = false;
+
+function resetCalib() {
+  _calibResetPending    = true;
+  _calibMidlinePressure = 0;
+  calibPeak = 0;
+  const pk = document.getElementById('gauge-peak');
+  if (pk) pk.style.display = 'none';
+}
+
 function startTestCanvas() {
   if (_testCanvasRunning) return;
   _testCanvasRunning = true;
@@ -1609,25 +1628,49 @@ function startTestCanvas() {
   const MIN_Y = 14, MAX_Y = H - 14;
   let by = H / 2, bvy = 0;
 
-  const MID_Y = H / 2;
+  const MID_Y     = H / 2;
+  const LOCK_ZONE = 18;   // px radius around midline counted as "in zone"
+  const LOCK_NEED = 90;   // frames to hold (~1.5 s at 60 fps)
   let midlineLocked = false;
+  let lockFrames = 0, lockSum = 0;
 
   function tick() {
-    // ⚡ HARDWARE API: thrust uses Gauge.normalized, same as main game
-    if (Input.isActive()) {
-      bvy -= CFG.THRUST * 0.55 * (0.45 + Gauge.normalized * 0.55);
+    // ── Reset ─────────────────────────────────────────────────────────
+    if (_calibResetPending) {
+      _calibResetPending = false;
+      midlineLocked = false; lockFrames = 0; lockSum = 0;
+      by = H / 2; bvy = 0;
     }
-    bvy += CFG.GRAVITY * 0.48;
-    bvy  = Math.max(-8, Math.min(8, bvy));
+
+    // ── Physics (pure-proportional — ball can hover at equilibrium) ───
+    // ⚡ HARDWARE API: Gauge.normalized comes from sensor; same as main game
+    if (Input.isActive()) {
+      bvy -= CFG.THRUST * 0.65 * Gauge.normalized;
+    }
+    bvy += CFG.GRAVITY * 0.45;
+    bvy *= 0.97;              // gentle damping so ball settles faster
+    bvy  = Math.max(-7, Math.min(7, bvy));
     by  += bvy;
     by   = Math.max(MIN_Y, Math.min(MAX_Y, by));
 
-    // Detect ball crossing midline while pressing — captures sensitivity reference
-    if (!midlineLocked && Input.isActive() && by <= MID_Y && Input.rawPressure > 0.05) {
-      midlineLocked = true;
-      _calibMidlinePressure = Input.rawPressure;
+    // ── Lock detection ────────────────────────────────────────────────
+    const inZone = !midlineLocked
+      && Input.isActive()
+      && Math.abs(by - MID_Y) < LOCK_ZONE
+      && Input.rawPressure > 0.04;
+
+    if (inZone) {
+      lockFrames++;
+      lockSum += Input.rawPressure;
+      if (lockFrames >= LOCK_NEED) {
+        midlineLocked = true;
+        _calibMidlinePressure = lockSum / lockFrames;
+      }
+    } else if (!midlineLocked) {
+      lockFrames = 0; lockSum = 0;
     }
 
+    // ── Background ────────────────────────────────────────────────────
     ctx.fillStyle = CFG.C.BG2;
     ctx.fillRect(0, 0, W, H);
     ctx.strokeStyle = CFG.C.GRID;
@@ -1636,36 +1679,70 @@ function startTestCanvas() {
     for (let x = -(t % 40); x < W + 40; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
     for (let y = 0; y < H; y += 28) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
 
-    // ── Midline ──
+    // ── Lock zone band ────────────────────────────────────────────────
+    const zoneProg = midlineLocked ? 1 : lockFrames / LOCK_NEED;
+    ctx.fillStyle = `rgba(34,211,238,${0.04 + zoneProg * 0.14})`;
+    ctx.fillRect(0, MID_Y - LOCK_ZONE, W, LOCK_ZONE * 2);
+
+    // ── Midline ───────────────────────────────────────────────────────
     ctx.setLineDash([6, 4]);
-    ctx.strokeStyle = midlineLocked ? 'rgba(34,211,238,0.7)' : 'rgba(248,113,113,0.45)';
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = midlineLocked
+      ? 'rgba(34,211,238,0.9)'
+      : (lockFrames > 0 ? 'rgba(34,211,238,0.55)' : 'rgba(248,113,113,0.45)');
+    ctx.lineWidth = midlineLocked ? 2 : 1.5;
     ctx.beginPath(); ctx.moveTo(0, MID_Y); ctx.lineTo(W, MID_Y); ctx.stroke();
     ctx.setLineDash([]);
+
     // midline label
-    ctx.fillStyle = midlineLocked ? 'rgba(34,211,238,0.85)' : 'rgba(248,113,113,0.7)';
+    ctx.fillStyle = midlineLocked
+      ? 'rgba(34,211,238,0.95)'
+      : (lockFrames > 0 ? 'rgba(34,211,238,0.75)' : 'rgba(248,113,113,0.7)');
     ctx.font = '8px Inter,system-ui,sans-serif';
     ctx.textAlign = 'right';
-    ctx.fillText(midlineLocked ? 'LOCKED' : 'TARGET', W - 6, MID_Y - 5);
+    ctx.fillText(
+      midlineLocked ? 'LOCKED \u2713' : (lockFrames > 0 ? 'HOLD STEADY\u2026' : 'TARGET ZONE'),
+      W - 6, MID_Y - 5
+    );
     ctx.textAlign = 'left';
 
+    // ── Height readout ────────────────────────────────────────────────
     const heightPct = 1 - (by - MIN_Y) / (MAX_Y - MIN_Y);
     ctx.fillStyle = 'rgba(100,116,139,0.85)';
     ctx.font = '9px Inter,system-ui,sans-serif';
     ctx.fillText('H: ' + (heightPct * 20).toFixed(1), 7, 13);
 
+    // ── Ball glow ─────────────────────────────────────────────────────
     const grd = ctx.createRadialGradient(W / 2, by, 0, W / 2, by, 28);
-    grd.addColorStop(0, 'rgba(34,211,238,0.22)'); grd.addColorStop(1, 'transparent');
+    grd.addColorStop(0, midlineLocked ? 'rgba(34,211,238,0.35)' : 'rgba(34,211,238,0.22)');
+    grd.addColorStop(1, 'transparent');
     ctx.fillStyle = grd;
     ctx.beginPath(); ctx.arc(W / 2, by, 28, 0, Math.PI * 2); ctx.fill();
 
+    // ── Ball ──────────────────────────────────────────────────────────
     const bg = ctx.createRadialGradient(W / 2 - 4, by - 4, 0, W / 2, by, 13);
     bg.addColorStop(0, '#b2f5ff'); bg.addColorStop(0.5, CFG.C.CYAN); bg.addColorStop(1, '#0891b2');
     ctx.fillStyle = bg;
     ctx.beginPath(); ctx.arc(W / 2, by, 13, 0, Math.PI * 2); ctx.fill();
 
-    if (Input.isActive()) {
-      ctx.strokeStyle = `rgba(34,211,238,${0.5 * Gauge.normalized})`;
+    // ── Lock progress arc (fills while locking) ───────────────────────
+    if (lockFrames > 0 && !midlineLocked) {
+      const prog = lockFrames / LOCK_NEED;
+      ctx.beginPath();
+      ctx.arc(W / 2, by, 20, -Math.PI / 2, -Math.PI / 2 + prog * Math.PI * 2);
+      ctx.strokeStyle = 'rgba(34,211,238,0.9)';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+    }
+
+    // ── Outer ring: locked = solid cyan, active = pressure-scaled ─────
+    if (midlineLocked) {
+      ctx.shadowColor = '#22d3ee'; ctx.shadowBlur = 12;
+      ctx.strokeStyle = 'rgba(34,211,238,0.95)';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.arc(W / 2, by, 18, 0, Math.PI * 2); ctx.stroke();
+      ctx.shadowBlur = 0;
+    } else if (Input.isActive()) {
+      ctx.strokeStyle = `rgba(34,211,238,${0.4 * Gauge.normalized})`;
       ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(W / 2, by, 16 + Gauge.normalized * 6, 0, Math.PI * 2); ctx.stroke();
     }
@@ -1709,8 +1786,8 @@ function startCalibLoop() {
 startCalibLoop();
 
 function finishCalibration() {
-  // Prefer midline pressure (the pressure when ball first reached the target line).
-  // Fall back to peak pressure if midline was never reached.
+  // Prefer locked pressure (average rawPressure while ball held in lock zone for 1.5 s).
+  // Fall back to peak pressure if the user never locked.
   const midP = _calibMidlinePressure;
   calibMaxPressure = midP > 0.05 ? midP : (calibPeak > 0.05 ? calibPeak : 1.0);
   const pct = Math.round((1 / calibMaxPressure) * 100);
