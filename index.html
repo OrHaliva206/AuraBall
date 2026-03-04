@@ -653,10 +653,10 @@
     .ss-hud-tier { font-size: .68rem; color: #a855f7; }
 
     /* SS touch areas */
-    #ss-touch-up, #ss-touch-down { display: none; position: fixed; left: 0; right: 0; z-index: 30; pointer-events: none; }
-    #ss-touch-up   { top: 0; height: 50%; }
-    #ss-touch-down { bottom: 0; height: 50%; }
-    #ss-touch-up.show, #ss-touch-down.show { display: block; pointer-events: all; }
+    #ss-touch-left, #ss-touch-right { display: none; position: fixed; top: 0; bottom: 0; z-index: 30; pointer-events: none; }
+    #ss-touch-left  { left: 0; width: 50%; }
+    #ss-touch-right { right: 0; width: 50%; }
+    #ss-touch-left.show, #ss-touch-right.show { display: block; pointer-events: all; }
 
     /* SS Reboot */
     #ss-reboot-overlay {
@@ -719,45 +719,45 @@
       .score-row { padding: 3px 0; }
       .score-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-      /* ── Mode Select — same compactness as login ── */
-      #mode-select-screen .mode-select-wrap { padding: 12px 10px; gap: 10px; width: 100%; }
-      .mode-select-header { gap: 3px; }
-      .mode-select-header h2 { font-size: 16px; }
-      .mode-select-header .greet { font-size: 9px; }
-      .mode-cards { gap: 6px; width: 100%; flex-direction: column; }
+      /* ── Mode Select ── */
+      #mode-select-screen .mode-select-wrap { padding: 20px 16px; gap: 18px; width: 100%; }
+      .mode-select-header { gap: 5px; }
+      .mode-select-header h2 { font-size: 18px; }
+      .mode-select-header .greet { font-size: 10px; }
+      .mode-cards { gap: 12px; width: 100%; flex-direction: column; }
       .mode-card {
-        width: 100%; flex-direction: row; padding: 12px; gap: 10px;
+        width: 100%; flex-direction: row; padding: 16px 14px; gap: 14px;
         text-align: left; align-items: center;
       }
-      .mode-card-icon { width: 44px; height: 44px; flex-shrink: 0; }
-      .mode-orb { width: 22px; height: 22px; }
-      .mode-card-title { font-size: 12px; }
-      .mode-card-desc  { font-size: 9px; line-height: 1.35; }
+      .mode-card-icon { width: 54px; height: 54px; flex-shrink: 0; }
+      .mode-orb { width: 28px; height: 28px; }
+      .mode-card-title { font-size: 13px; }
+      .mode-card-desc  { font-size: 10px; line-height: 1.45; }
       .mode-card-desc br { display: none; }
 
-      /* ── Calibration — compact single-column like login ── */
+      /* ── Calibration ── */
       #calibration-screen .layout {
-        grid-template-columns: 1fr; padding: 10px 12px;
-        gap: 8px; width: 100%;
+        grid-template-columns: 1fr; padding: 16px 16px;
+        gap: 14px; width: 100%;
       }
-      .gauge-wrap { flex-direction: row; align-items: center; gap: 8px; }
-      .gauge-track { height: 60px; width: 16px; }
+      .gauge-wrap { flex-direction: row; align-items: center; gap: 12px; }
+      .gauge-track { height: 110px; width: 18px; }
       .gauge-labels { display: none; }
       .gauge-marks  { display: none; }
       #gauge-midline::after { display: none; }
-      .calib-header h2 { font-size: 15px; }
-      .calib-header p  { font-size: 10px; margin-top: 1px; }
-      .calib-panel { gap: 6px; }
-      .pressure-readout { padding: 6px 10px; }
-      .pressure-readout .val { font-size: 20px; min-width: 40px; }
-      .pressure-readout .unit { font-size: 10px; }
-      #test-canvas { height: 60px; }
-      .info-box { padding: 6px 10px; }
-      .info-box p { font-size: 10px; line-height: 1.35; }
-      .key-chip { font-size: 9px; padding: 1px 5px; }
-      .diff-btn { padding: 7px 0; font-size: 9px; }
-      .diff-label { margin-bottom: 4px; }
-      .test-area-header { margin-bottom: 4px; }
+      .calib-header h2 { font-size: 16px; }
+      .calib-header p  { font-size: 11px; margin-top: 2px; }
+      .calib-panel { gap: 10px; }
+      .pressure-readout { padding: 8px 12px; }
+      .pressure-readout .val { font-size: 24px; min-width: 44px; }
+      .pressure-readout .unit { font-size: 11px; }
+      #test-canvas { height: 80px; }
+      .info-box { padding: 8px 12px; }
+      .info-box p { font-size: 11px; line-height: 1.45; }
+      .key-chip { font-size: 10px; padding: 2px 6px; }
+      .diff-btn { padding: 10px 0; font-size: 10px; }
+      .diff-label { margin-bottom: 6px; }
+      .test-area-header { margin-bottom: 6px; }
 
       /* ── AuraBall Start — same padding/gap as login panel ── */
       #start-screen .panel {
@@ -828,16 +828,16 @@
       .login-panel { padding: 10px 8px; gap: 6px; }
       .logo-text h1 { font-size: 16px; }
 
-      #mode-select-screen .mode-select-wrap { padding: 8px 6px; gap: 6px; }
-      .mode-card { padding: 10px; gap: 8px; }
-      .mode-card-icon { width: 36px; height: 36px; }
-      .mode-orb { width: 18px; height: 18px; }
+      #mode-select-screen .mode-select-wrap { padding: 14px 10px; gap: 12px; }
+      .mode-card { padding: 12px 10px; gap: 10px; }
+      .mode-card-icon { width: 44px; height: 44px; }
+      .mode-orb { width: 22px; height: 22px; }
 
-      #calibration-screen .layout { padding: 6px 8px; gap: 6px; }
-      .gauge-track { height: 48px; width: 14px; }
-      #test-canvas { height: 48px; }
-      .calib-header h2 { font-size: 14px; }
-      .pressure-readout .val { font-size: 18px; }
+      #calibration-screen .layout { padding: 10px 10px; gap: 10px; }
+      .gauge-track { height: 80px; width: 16px; }
+      #test-canvas { height: 60px; }
+      .calib-header h2 { font-size: 15px; }
+      .pressure-readout .val { font-size: 20px; }
 
       #start-screen .panel { padding: 10px 8px; gap: 6px; }
       .start-btn-group .btn { padding: 9px; font-size: 9px; }
@@ -1168,8 +1168,8 @@
 </div>
 
 <!-- SS Touch areas (mobile) -->
-<div id="ss-touch-up"></div>
-<div id="ss-touch-down"></div>
+<div id="ss-touch-left"></div>
+<div id="ss-touch-right"></div>
 
 <!-- SS Reboot Overlay -->
 <div id="ss-reboot-overlay">
@@ -1301,7 +1301,8 @@ const Auth = {
   loginWithGoogle(credential) {
     // Decode JWT payload (no verification needed — Google already verified it)
     const parts = credential.split('.');
-    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    const b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(b64), c => c.charCodeAt(0))));
     const key = 'g_' + payload.sub;  // unique Google user ID
     const displayName = payload.name || payload.email || 'Google User';
 
@@ -1482,9 +1483,9 @@ function showScreen(id) {
 
   // SpaceShip HUD + touch areas
   document.getElementById('ss-hud').classList.toggle('visible', id === 'ss-game');
-  const stu = document.getElementById('ss-touch-up'), std = document.getElementById('ss-touch-down');
-  if (isTouchDevice() && id === 'ss-game') { stu.classList.add('show'); std.classList.add('show'); }
-  else { stu.classList.remove('show'); std.classList.remove('show'); }
+  const stl = document.getElementById('ss-touch-left'), str = document.getElementById('ss-touch-right');
+  if (isTouchDevice() && id === 'ss-game') { stl.classList.add('show'); str.classList.add('show'); }
+  else { stl.classList.remove('show'); str.classList.remove('show'); }
 
   // Stop SS game when navigating away
   if (id !== 'ss-game' && typeof SSGame !== 'undefined') SSGame.stop();
@@ -2156,7 +2157,7 @@ function ss_pickDifficulty(d) {
 function ssGoToStart() {
   document.getElementById('ss-best-display').textContent = SS_bestScore;
   document.getElementById('ss-hud-best').textContent = SS_bestScore;
-  if (isTouchDevice()) document.getElementById('ss-controls-hint').textContent = 'Drag up/down to steer — ship auto-fires!';
+  if (isTouchDevice()) document.getElementById('ss-controls-hint').textContent = 'Drag left/right to steer — ship auto-fires!';
   showScreen('ss-start');
 }
 
@@ -2168,16 +2169,16 @@ function ss_randInt(lo, hi) { return Math.floor(ss_rand(lo, hi + 1)); }
 
 /* ── SSInput ── */
 const SSInput = {
-  up: false, down: false, touchY: null,
+  left: false, right: false, touchX: null,
 
   init() {
     window.addEventListener('keydown', e => {
-      if (e.code === 'ArrowUp'   || e.code === 'KeyW') { e.preventDefault(); this.up   = true; }
-      if (e.code === 'ArrowDown' || e.code === 'KeyS') { e.preventDefault(); this.down = true; }
+      if (e.code === 'ArrowLeft'  || e.code === 'KeyA') { e.preventDefault(); this.left  = true; }
+      if (e.code === 'ArrowRight' || e.code === 'KeyD') { e.preventDefault(); this.right = true; }
     });
     window.addEventListener('keyup', e => {
-      if (e.code === 'ArrowUp'   || e.code === 'KeyW') this.up   = false;
-      if (e.code === 'ArrowDown' || e.code === 'KeyS') this.down = false;
+      if (e.code === 'ArrowLeft'  || e.code === 'KeyA') this.left  = false;
+      if (e.code === 'ArrowRight' || e.code === 'KeyD') this.right = false;
     });
     document.addEventListener('touchstart', this._onStart.bind(this), { passive: false });
     document.addEventListener('touchmove',  this._onMove.bind(this),  { passive: false });
@@ -2191,15 +2192,15 @@ const SSInput = {
   _onStart(e) {
     if (!this._isSSGame() || this._rebootOn()) return;
     if (this._isTappable(e)) return;
-    e.preventDefault(); this.touchY = e.touches[0].clientY;
+    e.preventDefault(); this.touchX = e.touches[0].clientX;
   },
   _onMove(e) {
     if (!this._isSSGame() || this._rebootOn()) return;
-    e.preventDefault(); this.touchY = e.touches[0].clientY;
+    e.preventDefault(); this.touchX = e.touches[0].clientX;
   },
   _onEnd(e) {
     if (!this._isSSGame() || this._rebootOn()) return;
-    e.preventDefault(); this.touchY = null;
+    e.preventDefault(); this.touchX = null;
   },
 };
 
@@ -2243,8 +2244,8 @@ const SSGame = {
 
     const shipH = isMob ? 30 : 38;
     this.ship = {
-      x: isMob ? this.W * 0.13 : this.W * 0.10,
-      y: this.H / 2, vy: 0,
+      x: this.W / 2,
+      y: this.H * 0.85, vx: 0,
       w: shipH * 2, h: shipH,
       spd: this.diff.SHIP_SPEED * (isMob ? 0.85 : 1),
       invincible: 0, trail: [],
@@ -2282,8 +2283,8 @@ const SSGame = {
 
     this._updateShip(d);
 
-    this.bullets = this.bullets.filter(b => b.alive && b.x < this.W + 30);
-    this.bullets.forEach(b => { b.x += b.vx; });
+    this.bullets = this.bullets.filter(b => b.alive && b.y > -30);
+    this.bullets.forEach(b => { b.y += b.vy; });
 
     this.spawnTimer++;
     const rate = Math.max(28, d.SPAWN_RATE - this.tier * 4);
@@ -2297,8 +2298,8 @@ const SSGame = {
     });
 
     this.stars.forEach(s => {
-      s.x -= ([0.25, 0.6, 1.2])[s.layer] * this.scrollSpeed * 0.22;
-      if (s.x < -3) { s.x = this.W + 3; s.y = ss_rand(0, this.H); }
+      s.y += ([0.25, 0.6, 1.2])[s.layer] * this.scrollSpeed * 0.22;
+      if (s.y > this.H + 3) { s.y = -3; s.x = ss_rand(0, this.W); }
     });
 
     if (this.shake > 0.3) this.shake *= 0.82; else this.shake = 0;
@@ -2306,16 +2307,16 @@ const SSGame = {
 
   _updateShip(d) {
     const s = this.ship, isMob = this.W < 700;
-    if (isMob && SSInput.touchY !== null) {
-      s.y = ss_lerp(s.y, SSInput.touchY, 0.16);
+    if (isMob && SSInput.touchX !== null) {
+      s.x = ss_lerp(s.x, SSInput.touchX, 0.16);
     } else {
-      if (SSInput.up)   s.vy -= 0.75;
-      if (SSInput.down) s.vy += 0.75;
-      if (!SSInput.up && !SSInput.down) s.vy *= 0.78;
-      s.vy = ss_clamp(s.vy, -s.spd, s.spd);
-      s.y += s.vy;
+      if (SSInput.left)  s.vx -= 0.75;
+      if (SSInput.right) s.vx += 0.75;
+      if (!SSInput.left && !SSInput.right) s.vx *= 0.78;
+      s.vx = ss_clamp(s.vx, -s.spd, s.spd);
+      s.x += s.vx;
     }
-    s.y = ss_clamp(s.y, s.h * 0.5 + 4, this.H - s.h * 0.5 - 4);
+    s.x = ss_clamp(s.x, s.h * 0.5 + 4, this.W - s.h * 0.5 - 4);
     s.trail.push({ x: s.x, y: s.y });
     if (s.trail.length > 14) s.trail.shift();
     if (s.invincible > 0) s.invincible--;
@@ -2324,16 +2325,16 @@ const SSGame = {
     if (this.bulletTimer >= d.BULLET_INTERVAL) {
       this.bulletTimer = 0;
       const spd = (10 + d.SCROLL_SPEED) * this.spdScale * 1.9;
-      this.bullets.push({ x: s.x + s.w * 0.5, y: s.y, vx: spd, w: 20, h: 3, alive: true });
+      this.bullets.push({ x: s.x, y: s.y - s.w * 0.5, vy: -spd, w: 3, h: 20, alive: true });
     }
   },
 
   _spawnEnemy() {
     const type = this._pickType(), cfg = this._cfg(type), r = cfg.r;
-    const vy = type.startsWith('asteroid') ? ss_rand(-0.4, 0.4) * this.scrollSpeed * 0.3 : 0;
+    const vx = type.startsWith('asteroid') ? ss_rand(-0.4, 0.4) * this.scrollSpeed * 0.3 : 0;
     this.enemies.push({
-      type, x: this.W + r + 10, y: ss_rand(r + 8, this.H - r - 8),
-      vx: -(this.scrollSpeed * cfg.speedFactor), vy,
+      type, x: ss_rand(r + 8, this.W - r - 8), y: -r - 10,
+      vx, vy: this.scrollSpeed * cfg.speedFactor,
       r, hp: cfg.hp, maxHp: cfg.hp, alive: true,
       rot: ss_rand(0, Math.PI * 2), rotSpd: ss_rand(-0.025, 0.025),
       points: SS_SCORES[type],
@@ -2376,11 +2377,11 @@ const SSGame = {
 
   _updateEnemies() {
     const s = this.ship;
-    this.enemies = this.enemies.filter(e => e.alive && e.x > -e.r * 3);
+    this.enemies = this.enemies.filter(e => e.alive && e.y < this.H + e.r * 3);
     for (const e of this.enemies) {
-      if (e.type === 'enemy_bomber') { const dy = s.y - e.y; e.vy += dy * 0.004; e.vy = ss_clamp(e.vy, -3, 3); }
-      e.x += e.vx;
-      e.y  = ss_clamp(e.y + e.vy, e.r + 4, this.H - e.r - 4);
+      if (e.type === 'enemy_bomber') { const dx = s.x - e.x; e.vx += dx * 0.004; e.vx = ss_clamp(e.vx, -3, 3); }
+      e.x  = ss_clamp(e.x + e.vx, e.r + 4, this.W - e.r - 4);
+      e.y += e.vy;
       e.rot += e.rotSpd; e.wobble += e.wobbleFreq;
 
       for (const b of this.bullets) {
@@ -2478,13 +2479,13 @@ const SSGame = {
     for (let i = 0; i < trail.length; i++) {
       const f = i / trail.length;
       ctx.globalAlpha = f * 0.45; ctx.fillStyle = '#22d3ee';
-      ctx.beginPath(); ctx.arc(trail[i].x - this.ship.w * 0.42, trail[i].y, ss_lerp(1,4,f), 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(trail[i].x, trail[i].y + this.ship.w * 0.42, ss_lerp(1,4,f), 0, Math.PI*2); ctx.fill();
     }
     ctx.globalAlpha = 1;
   },
 
   _drawShip(ctx, s) {
-    ctx.save(); ctx.translate(s.x, s.y);
+    ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(-Math.PI / 2);
     const hw = s.w*0.5, hh = s.h*0.5;
     const eg = ctx.createRadialGradient(-hw*.82,0,0,-hw*.82,0,hh*1.3);
     eg.addColorStop(0,'rgba(34,211,238,.65)'); eg.addColorStop(0.5,'rgba(139,92,246,.3)'); eg.addColorStop(1,'transparent');
@@ -2508,15 +2509,15 @@ const SSGame = {
     for (const b of this.bullets) {
       if (!b.alive) continue;
       ctx.save(); ctx.shadowColor='#22d3ee'; ctx.shadowBlur=7;
-      const g = ctx.createLinearGradient(b.x-b.w,b.y,b.x,b.y);
+      const g = ctx.createLinearGradient(b.x, b.y+b.h, b.x, b.y);
       g.addColorStop(0,'transparent'); g.addColorStop(0.35,'rgba(34,211,238,.55)'); g.addColorStop(1,'#22d3ee');
-      ctx.fillStyle=g; ctx.fillRect(b.x-b.w, b.y-b.h*.5, b.w, b.h);
+      ctx.fillStyle=g; ctx.fillRect(b.x-b.w*0.5, b.y, b.w, b.h);
       ctx.shadowBlur=0; ctx.restore();
     }
   },
 
   _drawEnemy(ctx, e) {
-    ctx.save(); ctx.translate(e.x, e.y + Math.sin(e.wobble)*e.wobbleAmp);
+    ctx.save(); ctx.translate(e.x + Math.sin(e.wobble)*e.wobbleAmp, e.y);
     if (e.type.startsWith('asteroid')) this._drawAsteroid(ctx, e); else this._drawEnemyShip(ctx, e);
     if (e.maxHp > 1 && e.hp < e.maxHp) {
       const bw = e.r*2, pct = e.hp/e.maxHp;
@@ -2545,7 +2546,7 @@ const SSGame = {
 
   _drawEnemyShip(ctx, e) {
     const r = e.r, isBomber = e.type==='enemy_bomber';
-    ctx.scale(-1,1); ctx.shadowColor=isBomber?'#f87171':'#fb923c'; ctx.shadowBlur=12;
+    ctx.rotate(Math.PI/2); ctx.shadowColor=isBomber?'#f87171':'#fb923c'; ctx.shadowBlur=12;
     ctx.beginPath();
     ctx.moveTo(r*.9,0); ctx.lineTo(-r*.24,-r*.64); ctx.lineTo(-r*.85,-r*.3); ctx.lineTo(-r*.65,0); ctx.lineTo(-r*.85,r*.3); ctx.lineTo(-r*.24,r*.64); ctx.closePath();
     const g = ctx.createLinearGradient(-r,0,r,0);
