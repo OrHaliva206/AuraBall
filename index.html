@@ -46,6 +46,8 @@
       -webkit-user-select: none;
       user-select: none;
     }
+    #game-canvas    { will-change: transform; }
+    #ss-game-canvas { will-change: transform; }
 
     body {
       display: flex;
@@ -1456,7 +1458,9 @@ const Input = {
       document.getElementById('reboot-overlay').classList.contains('active');
     const onStart = e => {
       if (isGameScreen() && !rebootActive()) {
-        e.preventDefault(); this._held = true; return;
+        e.preventDefault(); this._held = true;
+        Game.ripples.push({ x: e.touches[0].clientX, y: e.touches[0].clientY, r: 10, alpha: 0.6 });
+        return;
       }
       if (isCalibScreen() && !isTappableEl(e)) { this._held = true; return; }
     };
@@ -1863,6 +1867,7 @@ const Game = {
   speed: 0, gapPx: 0, tier: 0,
   t0: 0, elapsed: 0,
   shakeFrames: 0, shakeMag: 0,
+  ripples: [],
 
   init() {
     this.canvas = document.getElementById('game-canvas');
@@ -1898,6 +1903,7 @@ const Game = {
     this.elapsed     = 0;
     this.shakeFrames = 0;
     this.shakeMag    = 0;
+    this.ripples     = [];
   },
 
   start() { this.reset(); this.running = true; this._loop(); },
@@ -2012,6 +2018,20 @@ const Game = {
     this._drawTrail(ctx);
     this._drawBall(ctx);
     ctx.restore();
+    this._drawRipples(ctx);
+  },
+
+  _drawRipples(ctx) {
+    for (const rp of this.ripples) {
+      ctx.beginPath();
+      ctx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(34,211,238,${rp.alpha.toFixed(2)})`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      rp.r     += 3.5;
+      rp.alpha -= 0.028;
+    }
+    this.ripples = this.ripples.filter(rp => rp.alpha > 0);
   },
 
   _drawSky(ctx, W, H) {
@@ -2765,6 +2785,26 @@ function ss_startGame() {
     document.getElementById(id).addEventListener('keydown', e => {
       if (e.key === 'Enter') doLogin();
     });
+  });
+
+  // Pause game loops when tab is hidden (saves battery, prevents timer drift)
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      if (Game.running)   { Game.stop();   Game._wasPaused = true; }
+      if (SSGame.running) { SSGame.stop(); SSGame._wasPaused = true; }
+    } else {
+      if (Game._wasPaused) {
+        Game._wasPaused = false;
+        Game.t0 = performance.now() - Game.elapsed * 1000; // resync — no time jump
+        Game.running = true;
+        Game._loop();
+      }
+      if (SSGame._wasPaused) {
+        SSGame._wasPaused = false;
+        SSGame.running = true;
+        SSGame._loop();
+      }
+    }
   });
 })();
 </script>
