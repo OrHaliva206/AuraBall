@@ -1148,7 +1148,7 @@
       </div>
       <button class="ss-play-btn" onclick="ss_startGame()">LAUNCH</button>
       <div class="ss-controls-hint" id="ss-controls-hint">
-        W / ↑ Move Up &nbsp;·&nbsp; S / ↓ Move Down<br>
+        ← → / A D &nbsp;Move &nbsp;·&nbsp; ↑ ↓ / W S &nbsp;Move<br>
         Ship auto-fires — dodge or destroy for bonus points!
       </div>
       <button class="ss-back-btn" onclick="showScreen('mode-select')">← Mode Select</button>
@@ -2234,7 +2234,7 @@ function ss_pickDifficulty(d) {
 function ssGoToStart() {
   document.getElementById('ss-best-display').textContent = SS_bestScore;
   document.getElementById('ss-hud-best').textContent = SS_bestScore;
-  if (isTouchDevice()) document.getElementById('ss-controls-hint').textContent = 'Drag left/right to steer — ship auto-fires!';
+  if (isTouchDevice()) document.getElementById('ss-controls-hint').textContent = 'Drag anywhere to move — ship auto-fires!';
   showScreen('ss-start');
 }
 
@@ -2246,16 +2246,21 @@ function ss_randInt(lo, hi) { return Math.floor(ss_rand(lo, hi + 1)); }
 
 /* ── SSInput ── */
 const SSInput = {
-  left: false, right: false, touchX: null,
+  left: false, right: false, up: false, down: false,
+  touchX: null, touchY: null,
 
   init() {
     window.addEventListener('keydown', e => {
       if (e.code === 'ArrowLeft'  || e.code === 'KeyA') { e.preventDefault(); this.left  = true; }
       if (e.code === 'ArrowRight' || e.code === 'KeyD') { e.preventDefault(); this.right = true; }
+      if (e.code === 'ArrowUp'    || e.code === 'KeyW') { e.preventDefault(); this.up    = true; }
+      if (e.code === 'ArrowDown'  || e.code === 'KeyS') { e.preventDefault(); this.down  = true; }
     });
     window.addEventListener('keyup', e => {
       if (e.code === 'ArrowLeft'  || e.code === 'KeyA') this.left  = false;
       if (e.code === 'ArrowRight' || e.code === 'KeyD') this.right = false;
+      if (e.code === 'ArrowUp'    || e.code === 'KeyW') this.up    = false;
+      if (e.code === 'ArrowDown'  || e.code === 'KeyS') this.down  = false;
     });
     document.addEventListener('touchstart', this._onStart.bind(this), { passive: false });
     document.addEventListener('touchmove',  this._onMove.bind(this),  { passive: false });
@@ -2269,15 +2274,21 @@ const SSInput = {
   _onStart(e) {
     if (!this._isSSGame() || this._rebootOn()) return;
     if (this._isTappable(e)) return;
-    e.preventDefault(); this.touchX = e.touches[0].clientX;
+    e.preventDefault();
+    this.touchX = e.touches[0].clientX;
+    this.touchY = e.touches[0].clientY;
   },
   _onMove(e) {
     if (!this._isSSGame() || this._rebootOn()) return;
-    e.preventDefault(); this.touchX = e.touches[0].clientX;
+    e.preventDefault();
+    this.touchX = e.touches[0].clientX;
+    this.touchY = e.touches[0].clientY;
   },
   _onEnd(e) {
     if (!this._isSSGame() || this._rebootOn()) return;
-    e.preventDefault(); this.touchX = null;
+    e.preventDefault();
+    this.touchX = null;
+    this.touchY = null;
   },
 };
 
@@ -2322,7 +2333,7 @@ const SSGame = {
     const shipH = isMob ? 30 : 38;
     this.ship = {
       x: this.W / 2,
-      y: this.H * 0.85, vx: 0,
+      y: this.H * 0.85, vx: 0, vy: 0,
       w: shipH * 2, h: shipH,
       spd: this.diff.SHIP_SPEED * (isMob ? 0.85 : 1),
       invincible: 0, trail: [],
@@ -2386,14 +2397,22 @@ const SSGame = {
     const s = this.ship, isMob = this.W < 700;
     if (isMob && SSInput.touchX !== null) {
       s.x = ss_lerp(s.x, SSInput.touchX, 0.16);
+      s.y = ss_lerp(s.y, SSInput.touchY, 0.16);
     } else {
       if (SSInput.left)  s.vx -= 0.75;
       if (SSInput.right) s.vx += 0.75;
       if (!SSInput.left && !SSInput.right) s.vx *= 0.78;
       s.vx = ss_clamp(s.vx, -s.spd, s.spd);
       s.x += s.vx;
+
+      if (SSInput.up)   s.vy -= 0.75;
+      if (SSInput.down) s.vy += 0.75;
+      if (!SSInput.up && !SSInput.down) s.vy *= 0.78;
+      s.vy = ss_clamp(s.vy, -s.spd, s.spd);
+      s.y += s.vy;
     }
     s.x = ss_clamp(s.x, s.h * 0.5 + 4, this.W - s.h * 0.5 - 4);
+    s.y = ss_clamp(s.y, s.w * 0.5 + 4, this.H - s.w * 0.5 - 4);
     s.trail.push({ x: s.x, y: s.y });
     if (s.trail.length > 14) s.trail.shift();
     if (s.invincible > 0) s.invincible--;
