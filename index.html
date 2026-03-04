@@ -328,6 +328,46 @@
     .score-empty { font-size: 11px; color: var(--text-dim); text-align: center; padding: 20px 0; }
 
     /* ═══════════════════════════════════════════════════
+       GLOBAL LEADERBOARD (on start screens)
+       ═══════════════════════════════════════════════════ */
+    .start-layout {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 24px;
+      width: 100%;
+      max-width: 860px;
+      justify-content: center;
+    }
+    .lb-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 24px 20px;
+      border: 1px solid var(--border);
+      background: var(--bg-800);
+      min-width: 220px;
+      max-width: 280px;
+      flex-shrink: 0;
+    }
+    .lb-title {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .lb-status {
+      font-size: 10px;
+      color: var(--text-dim);
+      text-align: center;
+      padding: 16px 0;
+      font-style: italic;
+    }
+
+    /* ═══════════════════════════════════════════════════
        CALIBRATION SCREEN
        ═══════════════════════════════════════════════════ */
     #calibration-screen .layout {
@@ -718,6 +758,9 @@
         padding: 10px; gap: 6px; min-height: unset;
         max-height: 160px; overflow-y: auto; -webkit-overflow-scrolling: touch;
       }
+      .start-layout { flex-direction: column; align-items: stretch; gap: 10px; }
+      .lb-panel { max-width: 100%; min-width: unset; padding: 10px; gap: 6px; max-height: 180px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+      .lb-title { font-size: 8px; padding-bottom: 5px; }
       .logo-text h1 { font-size: 18px; }
       .logo-orb { width: 28px; height: 28px; }
       .login-fields { gap: 6px; }
@@ -1075,36 +1118,46 @@
      ═══════════════════════════════════════════════════ -->
 <div id="start-screen" class="screen">
   <div class="screen-inner">
-    <div class="panel">
+    <div class="start-layout">
 
-      <p class="welcome-label">Welcome, <span id="welcome-name">—</span></p>
+      <div class="panel">
 
-      <div class="toggle-card">
-        <div class="toggle-row">
-          <span class="toggle-row-label">Hand Dominance</span>
-          <label class="sw">
-            <input type="checkbox" id="lefty-toggle" />
-            <span class="sw-track"></span>
-          </label>
-          <span class="mode-badge" id="mode-badge">LTR</span>
+        <p class="welcome-label">Welcome, <span id="welcome-name">—</span></p>
+
+        <div class="toggle-card">
+          <div class="toggle-row">
+            <span class="toggle-row-label">Hand Dominance</span>
+            <label class="sw">
+              <input type="checkbox" id="lefty-toggle" />
+              <span class="sw-track"></span>
+            </label>
+            <span class="mode-badge" id="mode-badge">LTR</span>
+          </div>
+          <p class="toggle-hint">LTR = Standard &nbsp;·&nbsp; RTL = Lefty (mirrored axis)</p>
         </div>
-        <p class="toggle-hint">LTR = Standard &nbsp;·&nbsp; RTL = Lefty (mirrored axis)</p>
+
+        <div style="text-align:center; font-size:10px; color:var(--cyan); letter-spacing:0.1em;" id="calib-sensitivity-label">
+          Sensitivity: default (not calibrated)
+        </div>
+
+        <div style="text-align:center; padding:10px; background:var(--bg-800); border:1px solid var(--border); margin-top:4px;">
+          <span style="font-size:9px; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-dim);">Personal Best</span>
+          <span style="font-size:18px; font-weight:300; color:var(--cyan); margin-left:12px; font-variant-numeric:tabular-nums;" id="start-best-score">—</span>
+          <span style="font-size:10px; color:var(--text-dim);">s</span>
+        </div>
+
+        <div class="start-btn-group">
+          <button class="btn" onclick="startGame()">&#9711;&ensp;Start Session</button>
+          <button class="btn btn-ghost" onclick="showScreen('calibration')">&larr; Recalibrate</button>
+          <button class="btn btn-ghost" onclick="logout()" style="font-size:9px; padding:8px;">Sign Out</button>
+        </div>
+
       </div>
 
-      <div style="text-align:center; font-size:10px; color:var(--cyan); letter-spacing:0.1em;" id="calib-sensitivity-label">
-        Sensitivity: default (not calibrated)
-      </div>
-
-      <div style="text-align:center; padding:10px; background:var(--bg-800); border:1px solid var(--border); margin-top:4px;">
-        <span style="font-size:9px; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-dim);">Personal Best</span>
-        <span style="font-size:18px; font-weight:300; color:var(--cyan); margin-left:12px; font-variant-numeric:tabular-nums;" id="start-best-score">—</span>
-        <span style="font-size:10px; color:var(--text-dim);">s</span>
-      </div>
-
-      <div class="start-btn-group">
-        <button class="btn" onclick="startGame()">&#9711;&ensp;Start Session</button>
-        <button class="btn btn-ghost" onclick="showScreen('calibration')">&larr; Recalibrate</button>
-        <button class="btn btn-ghost" onclick="logout()" style="font-size:9px; padding:8px;">Sign Out</button>
+      <!-- Global leaderboard — AuraBall -->
+      <div class="lb-panel">
+        <div class="lb-title">&#9654; Global Top 10</div>
+        <div id="ab-lb-list"><div class="lb-status">Loading…</div></div>
       </div>
 
     </div>
@@ -1168,24 +1221,34 @@
      ═══════════════════════════════════════════════════ -->
 <div id="ss-start-screen" class="screen">
   <div class="screen-inner">
-    <div class="ss-panel">
-      <div class="ss-game-title">SPACESHIP</div>
-      <div class="ss-game-subtitle">Dodge or destroy asteroids &amp; enemy ships. Shooting earns bonus points. Survive as long as you can.</div>
-      <div class="ss-best-display">Best Score: <span id="ss-best-display">0</span></div>
-      <div class="difficulty-selector">
-        <span class="diff-label">Difficulty</span>
-        <div class="diff-btns" id="ss-diff-btns">
-          <button class="diff-btn" data-diff="easy"   onclick="ss_pickDifficulty('easy')">Easy</button>
-          <button class="diff-btn active" data-diff="medium" onclick="ss_pickDifficulty('medium')">Medium</button>
-          <button class="diff-btn" data-diff="hard"   onclick="ss_pickDifficulty('hard')">Hard</button>
+    <div class="start-layout">
+
+      <div class="ss-panel">
+        <div class="ss-game-title">SPACESHIP</div>
+        <div class="ss-game-subtitle">Dodge or destroy asteroids &amp; enemy ships. Shooting earns bonus points. Survive as long as you can.</div>
+        <div class="ss-best-display">Best Score: <span id="ss-best-display">0</span></div>
+        <div class="difficulty-selector">
+          <span class="diff-label">Difficulty</span>
+          <div class="diff-btns" id="ss-diff-btns">
+            <button class="diff-btn" data-diff="easy"   onclick="ss_pickDifficulty('easy')">Easy</button>
+            <button class="diff-btn active" data-diff="medium" onclick="ss_pickDifficulty('medium')">Medium</button>
+            <button class="diff-btn" data-diff="hard"   onclick="ss_pickDifficulty('hard')">Hard</button>
+          </div>
         </div>
+        <button class="ss-play-btn" onclick="ss_startGame()">LAUNCH</button>
+        <div class="ss-controls-hint" id="ss-controls-hint">
+          ← → / A D &nbsp;Move &nbsp;·&nbsp; ↑ ↓ / W S &nbsp;Move<br>
+          Ship auto-fires — dodge or destroy for bonus points!
+        </div>
+        <button class="ss-back-btn" onclick="showScreen('mode-select')">← Mode Select</button>
       </div>
-      <button class="ss-play-btn" onclick="ss_startGame()">LAUNCH</button>
-      <div class="ss-controls-hint" id="ss-controls-hint">
-        ← → / A D &nbsp;Move &nbsp;·&nbsp; ↑ ↓ / W S &nbsp;Move<br>
-        Ship auto-fires — dodge or destroy for bonus points!
+
+      <!-- Global leaderboard — SpaceShip -->
+      <div class="lb-panel">
+        <div class="lb-title">&#9654; Global Top 10</div>
+        <div id="ss-lb-list"><div class="lb-status">Loading…</div></div>
       </div>
-      <button class="ss-back-btn" onclick="showScreen('mode-select')">← Mode Select</button>
+
     </div>
   </div>
 </div>
@@ -1514,6 +1577,78 @@ const Gauge = {
 };
 
 /* ─────────────────────────────────────────────────────────────────────
+   SUPABASE GLOBAL LEADERBOARD
+   ─────────────────────────────────────────────────────────────────── */
+const SUPA_URL = 'https://fsalgyfdobmtdjfzbjsx.supabase.co';
+const SUPA_KEY = 'sb_publishable_kq5B_H3Lt_bndulqhjOYzg_bcU17nYW';
+
+async function _supaFetch(method, path, body) {
+  const res = await fetch(SUPA_URL + '/rest/v1/' + path, {
+    method,
+    headers: {
+      'apikey':        SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Content-Type':  'application/json',
+      'Prefer':        method === 'POST' ? 'resolution=merge-duplicates,return=minimal' : 'return=minimal'
+    },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  if (method === 'GET') {
+    if (!res.ok) return null;
+    return res.json();
+  }
+  return res.ok;
+}
+
+async function syncScoresToSupabase(field, newVal) {
+  if (!Auth.isGoogleUser()) return;
+  const sub  = Auth.current.slice(2); // strip 'g_' prefix
+  const name = Auth.getDisplayName();
+  const email = Auth.users[Auth.current] ? (Auth._googleUser && Auth._googleUser.email) || '' : '';
+
+  // Fetch existing row
+  const rows = await _supaFetch('GET', `scores?google_sub=eq.${encodeURIComponent(sub)}&select=auraball,spaceship`);
+  const existing = rows && rows[0];
+
+  const auraball  = field === 'auraball'  ? Math.max(newVal, existing ? existing.auraball  : 0) : (existing ? existing.auraball  : 0);
+  const spaceship = field === 'spaceship' ? Math.max(newVal, existing ? existing.spaceship : 0) : (existing ? existing.spaceship : 0);
+
+  await _supaFetch('POST', 'scores', {
+    google_sub:   sub,
+    display_name: name,
+    email,
+    auraball,
+    spaceship,
+    updated_at:   new Date().toISOString()
+  });
+}
+
+async function renderLeaderboard(listId, field, fmt) {
+  const el = document.getElementById(listId);
+  if (!el) return;
+  el.innerHTML = '<div class="lb-status">Loading…</div>';
+
+  const rows = await _supaFetch('GET', `scores?select=display_name,${field},google_sub&order=${field}.desc&limit=10`);
+
+  if (!rows || rows.length === 0) {
+    el.innerHTML = '<div class="lb-status">No scores yet — be the first!</div>';
+    return;
+  }
+
+  const currentSub = Auth.isGoogleUser() ? Auth.current.slice(2) : null;
+  const medals = ['🥇','🥈','🥉'];
+  el.innerHTML = rows.map((row, i) => {
+    const isMe = row.google_sub === currentSub;
+    const rank = medals[i] || ('#' + (i + 1));
+    return `<div class="score-row">
+      <span class="score-rank">${rank}</span>
+      <span class="score-name${isMe ? ' me' : ''}">${escHtml(row.display_name)}${isMe ? ' ◀' : ''}</span>
+      <span class="score-val">${fmt(row[field])}</span>
+    </div>`;
+  }).join('');
+}
+
+/* ─────────────────────────────────────────────────────────────────────
    SCREEN MANAGER
    ─────────────────────────────────────────────────────────────────── */
 function showScreen(id) {
@@ -1537,6 +1672,8 @@ function showScreen(id) {
 
   if (id === 'calibration') { startCalibLoop(); startTestCanvas(); }
   if (id === 'login') renderScoreboard();
+  if (id === 'start')    renderLeaderboard('ab-lb-list',  'auraball',  v => (v / 100).toFixed(2) + ' s');
+  if (id === 'ss-start') renderLeaderboard('ss-lb-list',  'spaceship', v => String(v));
 }
 
 function isTouchDevice() {
@@ -2181,6 +2318,7 @@ const Game = {
 
     const isNewBest = Auth.saveScore(finalTime);
     renderScoreboard();
+    if (isNewBest) syncScoresToSupabase('auraball', Math.round(finalTime * 100));
 
     this.shakeFrames = 24; this.shakeMag = 18;
     this._render();
@@ -2714,7 +2852,7 @@ const SSGame = {
 /* ── SS Reboot ── */
 function ss_showReboot(score) {
   const isNew = score > SS_bestScore;
-  if (isNew) { SS_bestScore = score; localStorage.setItem('spaceship_best', SS_bestScore); }
+  if (isNew) { SS_bestScore = score; localStorage.setItem('spaceship_best', SS_bestScore); syncScoresToSupabase('spaceship', score); }
   document.getElementById('ss-reboot-score').textContent = score;
   document.getElementById('ss-reboot-best').textContent  = SS_bestScore;
   document.getElementById('ss-best-display').textContent = SS_bestScore;
