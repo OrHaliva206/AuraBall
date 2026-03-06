@@ -1720,7 +1720,7 @@ function showScreen(id) {
   if (id !== 'ss-game' && typeof SSGame !== 'undefined') SSGame.stop();
 
   if (id === 'calibration') { startCalibLoop(); startTestCanvas(); }
-  if (id === 'login') renderScoreboard();
+  if (id === 'login') { renderScoreboard(); setTimeout(initGoogleSignIn, 50); }
   if (id === 'start')    _syncLocalBestsOnce().then(() => renderLeaderboard('ab-lb-list',  'auraball',  v => (v / 100).toFixed(2) + ' s'));
   if (id === 'ss-start') _syncLocalBestsOnce().then(() => renderLeaderboard('ss-lb-list',  'spaceship', v => String(v)));
 }
@@ -1774,11 +1774,14 @@ function initGoogleSignIn() {
   google.accounts.id.initialize({
     client_id: '2438728136-95bkn5bp4n215veg8cubmg57ous2lm94.apps.googleusercontent.com',
     callback: handleGoogleSignIn,
+    auto_select: true,
   });
-  google.accounts.id.renderButton(
-    document.getElementById('google-signin-btn'),
+  const btn = document.getElementById('google-signin-btn');
+  btn.innerHTML = ''; // allow re-render after logout
+  google.accounts.id.renderButton(btn,
     { theme: 'filled_black', size: 'large', shape: 'rectangular', text: 'signin_with', width: 280 }
   );
+  google.accounts.id.prompt();
 }
 
 function logout() {
