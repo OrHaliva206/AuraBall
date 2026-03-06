@@ -1648,6 +1648,15 @@ async function renderLeaderboard(listId, field, fmt) {
   }).join('');
 }
 
+let _localBestsSynced = false;
+function _syncLocalBestsOnce() {
+  if (_localBestsSynced || !Auth.isGoogleUser()) return;
+  _localBestsSynced = true;
+  const ab = Auth.getBestScore();
+  if (ab > 0) syncScoresToSupabase('auraball', Math.round(ab * 100));
+  if (SS_bestScore > 0) syncScoresToSupabase('spaceship', SS_bestScore);
+}
+
 /* ─────────────────────────────────────────────────────────────────────
    SCREEN MANAGER
    ─────────────────────────────────────────────────────────────────── */
@@ -1672,8 +1681,8 @@ function showScreen(id) {
 
   if (id === 'calibration') { startCalibLoop(); startTestCanvas(); }
   if (id === 'login') renderScoreboard();
-  if (id === 'start')    renderLeaderboard('ab-lb-list',  'auraball',  v => (v / 100).toFixed(2) + ' s');
-  if (id === 'ss-start') renderLeaderboard('ss-lb-list',  'spaceship', v => String(v));
+  if (id === 'start')    { renderLeaderboard('ab-lb-list',  'auraball',  v => (v / 100).toFixed(2) + ' s'); _syncLocalBestsOnce(); }
+  if (id === 'ss-start') { renderLeaderboard('ss-lb-list',  'spaceship', v => String(v));                    _syncLocalBestsOnce(); }
 }
 
 function isTouchDevice() {
