@@ -1720,7 +1720,7 @@ function showScreen(id) {
   if (id !== 'ss-game' && typeof SSGame !== 'undefined') SSGame.stop();
 
   if (id === 'calibration') { startCalibLoop(); startTestCanvas(); }
-  if (id === 'login') renderScoreboard();
+  if (id === 'login') { renderScoreboard(); initGoogleSignIn(); }
   if (id === 'start')    _syncLocalBestsOnce().then(() => renderLeaderboard('ab-lb-list',  'auraball',  v => (v / 100).toFixed(2) + ' s'));
   if (id === 'ss-start') _syncLocalBestsOnce().then(() => renderLeaderboard('ss-lb-list',  'spaceship', v => String(v)));
 }
