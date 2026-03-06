@@ -2960,6 +2960,13 @@ function ss_startGame() {
   buildGauge();
   renderScoreboard();
 
+  // Auto sign-in returning Google users instantly from localStorage
+  const _savedGoogleKey = localStorage.getItem('auraball_google_user');
+  if (_savedGoogleKey && Auth.users[_savedGoogleKey]) {
+    Auth.current = _savedGoogleKey;
+    afterLogin();
+  }
+
   // Initialize Google Sign-In (script loads async, may not be ready yet)
   if (typeof google !== 'undefined' && google.accounts) {
     initGoogleSignIn();
