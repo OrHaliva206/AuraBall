@@ -1628,7 +1628,7 @@ async function renderLeaderboard(listId, field, fmt) {
   if (!el) return;
   el.innerHTML = '<div class="lb-status">Loading…</div>';
 
-  const rows = await _supaFetch('GET', `scores?select=display_name,${field},google_sub&order=${field}.desc&limit=10`);
+  const rows = await _supaFetch('GET', `scores?select=display_name,${field},google_sub&${field}=gt.0&order=${field}.desc&limit=10`);
 
   if (!rows || rows.length === 0) {
     el.innerHTML = '<div class="lb-status">No scores yet — be the first!</div>';
