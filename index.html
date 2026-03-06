@@ -1007,7 +1007,21 @@
 
         <div class="google-divider"><span>or</span></div>
 
-        <div id="google-signin-btn" style="display:flex; justify-content:center;"></div>
+        <div id="g_id_onload"
+             data-client_id="2438728136-95bkn5bp4n215veg8cubmg57ous2lm94.apps.googleusercontent.com"
+             data-callback="handleGoogleSignIn"
+             data-auto_select="false">
+        </div>
+        <div style="display:flex; justify-content:center;">
+          <div class="g_id_signin"
+               data-type="standard"
+               data-theme="filled_black"
+               data-size="large"
+               data-shape="rectangular"
+               data-text="signin_with"
+               data-width="280">
+          </div>
+        </div>
 
         <p style="font-size:9px; color:var(--text-dim); text-align:center; line-height:1.7;">
           Data stored locally on this device.
@@ -1771,16 +1785,7 @@ function handleGoogleSignIn(response) {
 
 function initGoogleSignIn() {
   if (typeof google === 'undefined' || !google.accounts) return;
-  google.accounts.id.initialize({
-    client_id: '2438728136-95bkn5bp4n215veg8cubmg57ous2lm94.apps.googleusercontent.com',
-    callback: handleGoogleSignIn,
-    auto_select: true,
-  });
-  google.accounts.id.renderButton(
-    document.getElementById('google-signin-btn'),
-    { theme: 'filled_black', size: 'large', shape: 'rectangular', text: 'signin_with', width: 280 }
-  );
-  // Try auto sign-in for returning users
+  // Button renders via declarative HTML (g_id_signin). Just trigger One Tap prompt.
   google.accounts.id.prompt();
 }
 
