@@ -1516,23 +1516,8 @@ const Auth = {
    SCOREBOARD RENDERER
    ─────────────────────────────────────────────────────────────────── */
 function renderScoreboard() {
-  const el    = document.getElementById('scoreboard-list');
-  const board = Auth.getLeaderboard();
-  if (!board.length) {
-    el.innerHTML = '<div class="score-empty">No scores yet — be the first!</div>';
-    return;
-  }
-  const rankClass = ['gold','silver','bronze'];
-  el.innerHTML = board.map((entry, i) => {
-    const isMe = entry.key === Auth.current;
-    return `
-      <div class="score-row">
-        <span class="score-rank ${rankClass[i] || ''}">${i + 1}</span>
-        <span class="score-name ${isMe ? 'me' : ''}">${escHtml(entry.name)}${isMe ? ' ◀' : ''}</span>
-        <span class="score-val">${entry.score.toFixed(2)}</span>
-        <span class="score-unit">s</span>
-      </div>`;
-  }).join('');
+  const el = document.getElementById('scoreboard-list');
+  if (!el) return; // scoreboard panel was removed
 }
 
 function escHtml(s) {
