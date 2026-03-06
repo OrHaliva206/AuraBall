@@ -2960,18 +2960,18 @@ function ss_startGame() {
   buildGauge();
   renderScoreboard();
 
-  // Auto sign-in returning Google users instantly from localStorage
-  const _savedGoogleKey = localStorage.getItem('auraball_google_user');
-  if (_savedGoogleKey && Auth.users[_savedGoogleKey]) {
-    Auth.current = _savedGoogleKey;
-    afterLogin();
-  }
-
-  // Initialize Google Sign-In (script loads async, may not be ready yet)
+  // Initialize Google Sign-In FIRST (login screen is still visible here)
   if (typeof google !== 'undefined' && google.accounts) {
     initGoogleSignIn();
   } else {
     window.addEventListener('load', () => setTimeout(initGoogleSignIn, 300));
+  }
+
+  // Auto sign-in returning Google users from localStorage (hides login screen)
+  const _savedGoogleKey = localStorage.getItem('auraball_google_user');
+  if (_savedGoogleKey && Auth.users[_savedGoogleKey]) {
+    Auth.current = _savedGoogleKey;
+    afterLogin();
   }
 
   // Wire Enter key on login inputs
