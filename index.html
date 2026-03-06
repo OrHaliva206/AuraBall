@@ -904,6 +904,36 @@
        Only on touch devices (pointer: coarse), so desktop
        hover animations are completely unaffected.
        ═══════════════════════════════════════════════════ */
+    /* ═══════════════════════════════════════════════════
+       BACK ARROW (top-left of start screens)
+       ═══════════════════════════════════════════════════ */
+    .screen-back-btn {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      z-index: 10;
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      padding: 6px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition: color 0.15s;
+      line-height: 1;
+    }
+    .screen-back-btn:hover { color: var(--cyan); }
+    .screen-back-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+    @media (max-width: 700px) {
+      .screen-back-btn { top: max(10px, env(safe-area-inset-top)); left: max(10px, env(safe-area-inset-left)); }
+      .screen-back-btn svg { width: 16px; height: 16px; }
+    }
+
     @media (pointer: coarse) {
       .btn                 { transition: color 0.22s ease, transform 0.08s ease; }
       .btn:active          { transform: scale(0.95); }
@@ -930,6 +960,9 @@
 
       .calib-reset-btn     { transition: color 0.2s, border-color 0.2s, transform 0.08s; }
       .calib-reset-btn:active { transform: scale(0.93); opacity: 0.6; }
+
+      .screen-back-btn     { transition: color 0.1s, transform 0.08s; }
+      .screen-back-btn:active { color: var(--cyan); transform: scale(0.88); }
     }
 
   </style>
@@ -1117,6 +1150,9 @@
      SCREEN 2 — START
      ═══════════════════════════════════════════════════ -->
 <div id="start-screen" class="screen">
+  <button class="screen-back-btn" onclick="showScreen('mode-select')" aria-label="Back to mode select">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
   <div class="screen-inner">
     <div class="start-layout">
 
@@ -1220,6 +1256,9 @@
      SS START SCREEN
      ═══════════════════════════════════════════════════ -->
 <div id="ss-start-screen" class="screen">
+  <button class="screen-back-btn" onclick="showScreen('mode-select')" aria-label="Back to mode select">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
   <div class="screen-inner">
     <div class="start-layout">
 
